@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(23);
+select plan(24);
 
 -- ============================================================
 -- TEST FIXTURES
@@ -637,13 +637,15 @@ select is(
 );
 
 -- TEST 21
-select lives_ok(
+select throws_ok(
   $$
     update public.reviews
     set status = 'PUBLISHED'
     where id = 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff'
   $$,
-  'Admin can moderate review status'
+  '42501',
+  null,
+  'Admin cannot change review status directly'
 );
 
 -- TEST 22
@@ -664,6 +666,18 @@ select is(
   ),
   1::bigint,
   'Admin can read analytics events'
+);
+
+-- TEST 24
+select throws_ok(
+  $$
+    update public.reviews
+    set status = 'PUBLISHED'
+    where id = 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff'
+  $$,
+  '42501',
+  null,
+  'Customer cannot change review moderation status'
 );
 
 select * from finish();
