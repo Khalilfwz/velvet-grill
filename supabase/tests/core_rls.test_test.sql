@@ -77,7 +77,7 @@ values
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     'Wagyu Ribeye Steak',
-    'wagyu-ribeye-steak',
+    'test-wagyu-ribeye-steak',
     250000,
     10,
     true
@@ -91,20 +91,6 @@ values
     10,
     false
   );
-
--- Restaurant settings
-insert into public.restaurant_settings (
-  id,
-  restaurant_name,
-  currency_code,
-  timezone
-)
-values (
-  1,
-  'Velvet Grill',
-  'IDR',
-  'Asia/Jakarta'
-);
 
 -- ============================================================
 -- Test 1: All nine core tables have RLS enabled
@@ -145,6 +131,7 @@ select is(
   (
     select count(*)
     from public.products
+    where id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
   ),
   1::bigint,
   'Anonymous users see only available products'

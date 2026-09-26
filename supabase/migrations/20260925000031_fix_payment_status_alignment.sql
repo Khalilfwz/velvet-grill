@@ -1,0 +1,8 @@
+ALTER TYPE public.payment_status
+  RENAME VALUE 'SUCCEEDED' TO 'PAID';
+
+ALTER TYPE public.payment_status
+  ADD VALUE IF NOT EXISTS 'UNPAID' BEFORE 'PENDING';
+
+ALTER TYPE public.payment_status
+  ADD VALUE IF NOT EXISTS 'REFUNDED' AFTER 'PAID';

@@ -90,7 +90,7 @@ insert into public.restaurant_tables (
 )
 values (
   'dddddddd-dddd-dddd-dddd-dddddddddddd',
-  'T01',
+  'test-T01',
   4,
   true
 );

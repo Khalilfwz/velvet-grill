@@ -116,7 +116,7 @@ values (
   250000,
   0,
   250000,
-  'SUCCEEDED',
+  'PAID',
   'COMPLETED'
 );
 
@@ -171,7 +171,7 @@ values (
   430000,
   0,
   430000,
-  'SUCCEEDED',
+  'PAID',
   'COMPLETED'
 );
 

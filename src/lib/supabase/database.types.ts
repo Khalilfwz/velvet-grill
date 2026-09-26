@@ -1158,11 +1158,12 @@ export type Database = {
         | "CANCELLED"
       payment_method: "DUMMY_QRIS" | "DUMMY_BANK_TRANSFER" | "CASH"
       payment_status:
+        | "UNPAID"
         | "PENDING"
-        | "SUCCEEDED"
+        | "PAID"
         | "FAILED"
         | "EXPIRED"
-        | "CANCELLED"
+        | "REFUNDED"
       review_status: "PUBLISHED" | "HIDDEN"
       user_role: "CUSTOMER" | "ADMIN"
     }
@@ -1309,11 +1310,12 @@ export const Constants = {
       ],
       payment_method: ["DUMMY_QRIS", "DUMMY_BANK_TRANSFER", "CASH"],
       payment_status: [
+        "UNPAID",
         "PENDING",
-        "SUCCEEDED",
+        "PAID",
         "FAILED",
         "EXPIRED",
-        "CANCELLED",
+        "REFUNDED",
       ],
       review_status: ["PUBLISHED", "HIDDEN"],
       user_role: ["CUSTOMER", "ADMIN"],

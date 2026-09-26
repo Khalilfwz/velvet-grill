@@ -1,0 +1,14 @@
+{
+  "version": "v2-markdown-review",
+  "purpose": "Revised Markdown documentation for Velvet Grill before Command Code adoption.",
+  "json_included": false,
+  "revisions": [
+    "Consolidated overlapping agent/security rules.",
+    "Added explicit testing stack.",
+    "Added canonical target order/payment state machines with implementation caveat.",
+    "Added secure dine-in table context flow.",
+    "Added atomic stock concurrency strategy.",
+    "Added documentation-to-agent routing.",
+    "Reduced project skill duplication."
+  ]
+}
