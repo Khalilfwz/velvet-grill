@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(21);
 
 -- ============================================================
 -- TEST FIXTURES
@@ -535,6 +535,21 @@ select throws_ok(
 );
 
 -- 14
+update public.payments
+set status = 'PAID'
+where id = '94949494-9494-9494-9494-949494949494';
+
+select is(
+  (
+    select status
+    from public.payments
+    where id = '94949494-9494-9494-9494-949494949494'
+  ),
+  'PENDING'::public.payment_status,
+  'Customer cannot change payment status'
+);
+
+-- 15
 select is(
   (
     select count(*)
