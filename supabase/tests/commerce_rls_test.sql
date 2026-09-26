@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(23);
 
 -- ============================================================
 -- TEST FIXTURES
@@ -234,7 +234,7 @@ values
     250000,
     0,
     250000,
-    'PENDING',
+    'UNPAID',
     'CONFIRMED'
   );
 
@@ -289,7 +289,7 @@ values
     '95959595-9595-9595-9595-959595959595',
     '91919191-9191-9191-9191-919191919191',
     'CASH',
-    'PENDING',
+    'UNPAID',
     250000
   );
 
@@ -563,6 +563,7 @@ select is(
 -- CUSTOMER A cannot create cart for Customer B
 -- ============================================================
 
+-- 16
 select throws_ok(
   $$
     insert into public.carts (
@@ -579,6 +580,46 @@ select throws_ok(
   'Customer cannot create a cart for another user'
 );
 
+-- 17
+update public.orders
+set order_status = 'PREPARING'
+where id = '90909090-9090-9090-9090-909090909090';
+
+select is(
+  (
+    select order_status
+    from public.orders
+    where id = '90909090-9090-9090-9090-909090909090'
+  ),
+  'CONFIRMED'::public.order_status,
+  'Customer cannot change order status'
+);
+
+-- 18
+select throws_ok(
+  $$
+    insert into public.order_status_history (
+      id,
+      order_id,
+      from_status,
+      to_status,
+      changed_by,
+      note
+    )
+    values (
+      '98989898-9898-9898-9898-989898989898',
+      '90909090-9090-9090-9090-909090909090',
+      'CONFIRMED',
+      'PREPARING',
+      '11111111-1111-1111-1111-111111111111',
+      'Fake customer status transition'
+    )
+  $$,
+  '42501',
+  null,
+  'Customer cannot create order status history'
+);
+
 -- ============================================================
 -- ADMIN
 -- ============================================================
@@ -586,7 +627,7 @@ select throws_ok(
 set local request.jwt.claim.sub =
   '22222222-2222-2222-2222-222222222222';
 
--- 16
+-- 19
 select ok(
   (
     select private.is_admin()
@@ -594,7 +635,7 @@ select ok(
   'Admin helper identifies the ADMIN user'
 );
 
--- 17
+-- 20
 select is(
   (
     select count(*)
@@ -604,7 +645,7 @@ select is(
   'Admin can read all orders'
 );
 
--- 18
+-- 21
 select is(
   (
     select count(*)
@@ -614,7 +655,7 @@ select is(
   'Admin can read all payments'
 );
 
--- 19
+-- 22
 select is(
   (
     select count(*)
@@ -624,7 +665,7 @@ select is(
   'Admin can read coupon data'
 );
 
--- 20
+-- 23
 select lives_ok(
   $$
     update public.orders
