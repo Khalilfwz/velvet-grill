@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(23);
+select plan(30);
 
 -- ============================================================
 -- TEST FIXTURES
@@ -581,6 +581,109 @@ select throws_ok(
 );
 
 -- 17
+select throws_ok(
+  $$
+    insert into public.cart_items (
+      id,
+      cart_id,
+      product_id,
+      quantity
+    )
+    values (
+      '13131313-1313-1313-1313-131313131313',
+      '20202020-2020-2020-2020-202020202020',
+      'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      1
+    )
+  $$,
+  '42501',
+  null,
+  'Customer cannot add item to another user cart'
+);
+
+-- 18
+update public.carts
+set user_id = '11111111-1111-1111-1111-111111111111'
+where id = '20202020-2020-2020-2020-202020202020';
+
+set local request.jwt.claim.sub =
+  '33333333-3333-3333-3333-333333333333';
+
+select is(
+  (
+    select user_id
+    from public.carts
+    where id = '20202020-2020-2020-2020-202020202020'
+  ),
+  '33333333-3333-3333-3333-333333333333'::uuid,
+  'Customer cannot update another user cart'
+);
+
+-- 19
+set local request.jwt.claim.sub =
+  '11111111-1111-1111-1111-111111111111';
+
+delete from public.carts
+where id = '20202020-2020-2020-2020-202020202020';
+
+set local request.jwt.claim.sub =
+  '33333333-3333-3333-3333-333333333333';
+
+select is(
+  (
+    select count(*)
+    from public.carts
+    where id = '20202020-2020-2020-2020-202020202020'
+  ),
+  1::bigint,
+  'Customer cannot delete another user cart'
+);
+
+-- 20
+set local request.jwt.claim.sub =
+  '11111111-1111-1111-1111-111111111111';
+
+update public.cart_items
+set quantity = quantity + 1
+where id = '40404040-4040-4040-4040-404040404040';
+
+set local request.jwt.claim.sub =
+  '33333333-3333-3333-3333-333333333333';
+
+select is(
+  (
+    select quantity
+    from public.cart_items
+    where id = '40404040-4040-4040-4040-404040404040'
+  ),
+  1,
+  'Customer cannot update another user cart item'
+);
+
+-- 21
+set local request.jwt.claim.sub =
+  '11111111-1111-1111-1111-111111111111';
+
+delete from public.cart_items
+where id = '40404040-4040-4040-4040-404040404040';
+
+set local request.jwt.claim.sub =
+  '33333333-3333-3333-3333-333333333333';
+
+select is(
+  (
+    select count(*)
+    from public.cart_items
+    where id = '40404040-4040-4040-4040-404040404040'
+  ),
+  1::bigint,
+  'Customer cannot delete another user cart item'
+);
+
+-- 22
+set local request.jwt.claim.sub =
+  '11111111-1111-1111-1111-111111111111';
+
 update public.orders
 set order_status = 'PREPARING'
 where id = '90909090-9090-9090-9090-909090909090';
@@ -595,7 +698,7 @@ select is(
   'Customer cannot change order status'
 );
 
--- 18
+-- 23
 select throws_ok(
   $$
     insert into public.order_status_history (
@@ -620,6 +723,48 @@ select throws_ok(
   'Customer cannot create order status history'
 );
 
+-- 24
+set local request.jwt.claim.sub =
+  '11111111-1111-1111-1111-111111111111';
+
+select throws_ok(
+  $$
+    insert into public.wishlist_items (
+      id,
+      wishlist_id,
+      product_id
+    )
+    values (
+      '81818181-8181-8181-8181-818181818181',
+      '60606060-6060-6060-6060-606060606060',
+      'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+    )
+  $$,
+  '42501',
+  null,
+  'Customer cannot add item to another user wishlist'
+);
+
+-- 25
+set local request.jwt.claim.sub =
+  '11111111-1111-1111-1111-111111111111';
+
+delete from public.wishlist_items
+where id = '80808080-8080-8080-8080-808080808080';
+
+set local request.jwt.claim.sub =
+  '33333333-3333-3333-3333-333333333333';
+
+select is(
+  (
+    select count(*)
+    from public.wishlist_items
+    where id = '80808080-8080-8080-8080-808080808080'
+  ),
+  1::bigint,
+  'Customer cannot delete another user wishlist item'
+);
+
 -- ============================================================
 -- ADMIN
 -- ============================================================
@@ -627,7 +772,7 @@ select throws_ok(
 set local request.jwt.claim.sub =
   '22222222-2222-2222-2222-222222222222';
 
--- 19
+-- 26
 select ok(
   (
     select private.is_admin()
@@ -635,7 +780,7 @@ select ok(
   'Admin helper identifies the ADMIN user'
 );
 
--- 20
+-- 27
 select is(
   (
     select count(*)
@@ -645,7 +790,7 @@ select is(
   'Admin can read all orders'
 );
 
--- 21
+-- 28
 select is(
   (
     select count(*)
@@ -655,7 +800,7 @@ select is(
   'Admin can read all payments'
 );
 
--- 22
+-- 29
 select is(
   (
     select count(*)
@@ -665,7 +810,7 @@ select is(
   'Admin can read coupon data'
 );
 
--- 23
+-- 30
 select lives_ok(
   $$
     update public.orders
