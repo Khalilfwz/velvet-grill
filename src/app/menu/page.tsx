@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function MenuPage() {
@@ -12,7 +13,7 @@ export default async function MenuPage() {
       .order('name'),
     supabase
       .from('products')
-      .select('id, name, description, base_price, category_id')
+      .select('id, name, description, base_price, category_id, slug')
       .eq('is_available', true)
       .order('name'),
   ])
@@ -89,27 +90,29 @@ export default async function MenuPage() {
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {group.products.map((product) => (
-                  <article
-                    key={product.id}
-                    className="rounded-xl border border-border bg-surface p-6 shadow-sm"
-                  >
-                    <h3 className="font-display text-xl font-semibold text-foreground">
-                      {product.name}
-                    </h3>
+                  <article key={product.id}>
+                    <Link
+                      href={`/menu/${product.slug}`}
+                      className="block h-full rounded-xl border border-border bg-surface p-6 shadow-sm transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    >
+                      <h3 className="font-display text-xl font-semibold text-foreground">
+                        {product.name}
+                      </h3>
 
-                    {product.description && (
-                      <p className="mt-2 text-sm leading-6 text-zinc-600">
-                        {product.description}
+                      {product.description && (
+                        <p className="mt-2 text-sm leading-6 text-zinc-600">
+                          {product.description}
+                        </p>
+                      )}
+
+                      <p className="mt-4 font-medium text-brand">
+                        {new Intl.NumberFormat('id-ID', {
+                          style: 'currency',
+                          currency: 'IDR',
+                          maximumFractionDigits: 0,
+                        }).format(product.base_price)}
                       </p>
-                    )}
-
-                    <p className="mt-4 font-medium text-brand">
-                      {new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        maximumFractionDigits: 0,
-                      }).format(product.base_price)}
-                    </p>
+                    </Link>
                   </article>
                 ))}
               </div>
