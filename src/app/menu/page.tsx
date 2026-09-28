@@ -3,24 +3,25 @@ import { createClient } from '@/lib/supabase/server'
 export default async function MenuPage() {
   const supabase = await createClient()
 
-  const { data: products, error } = await supabase
-    .from('products')
-    .select(`
-      id,
-      name,
-      description,
-      base_price,
-      category:categories (
-        id,
-        name,
-        slug,
-        sort_order
-      )
-    `)
-    .order('name')
+  const [categoriesResult, productsResult] = await Promise.all([
+    supabase
+      .from('categories')
+      .select('id, name, slug, sort_order')
+      .eq('is_active', true)
+      .order('sort_order')
+      .order('name'),
+    supabase
+      .from('products')
+      .select('id, name, description, base_price, category_id')
+      .eq('is_available', true)
+      .order('name'),
+  ])
 
-  if (error) {
-    console.error('Failed to fetch menu:', error)
+  const { data: categories, error: categoriesError } = categoriesResult
+  const { data: products, error: productsError } = productsResult
+
+  if (categoriesError || productsError) {
+    console.error('Failed to fetch menu:', categoriesError ?? productsError)
 
     return (
       <main className="min-h-screen bg-background px-6 py-12">
@@ -37,36 +38,30 @@ export default async function MenuPage() {
     )
   }
 
-  const groupedProducts = products.reduce<
-    Record<
-      string,
-      {
-        category: NonNullable<(typeof products)[number]['category']>
-        products: (typeof products)[number][]
-      }
-    >
-  >((groups, product) => {
-    if (!product.category) {
-      return groups
+  const activeCategories = categories ?? []
+  const availableProducts = products ?? []
+
+  const productsByCategory = new Map<
+    string,
+    (typeof availableProducts)[number][]
+  >()
+
+  for (const product of availableProducts) {
+    const existing = productsByCategory.get(product.category_id)
+
+    if (existing) {
+      existing.push(product)
+    } else {
+      productsByCategory.set(product.category_id, [product])
     }
+  }
 
-    const categoryId = product.category.id
-
-    if (!groups[categoryId]) {
-      groups[categoryId] = {
-        category: product.category,
-        products: [],
-      }
-    }
-
-    groups[categoryId].products.push(product)
-
-    return groups
-  }, {})
-
-  const categoryGroups = Object.values(groupedProducts).sort(
-    (a, b) => a.category.sort_order - b.category.sort_order
-  )
+  const categoryGroups = activeCategories
+    .map((category) => ({
+      category,
+      products: productsByCategory.get(category.id) ?? [],
+    }))
+    .filter((group) => group.products.length > 0)
 
   return (
     <main className="min-h-screen bg-background px-6 py-12">
