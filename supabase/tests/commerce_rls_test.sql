@@ -24,28 +24,20 @@ values
     'customer-b@test.local'
   );
 
--- Profiles
-insert into public.profiles (
-  id,
-  full_name,
-  role
-)
-values
-  (
-    '11111111-1111-1111-1111-111111111111',
-    'Customer A',
-    'CUSTOMER'
-  ),
-  (
-    '22222222-2222-2222-2222-222222222222',
-    'Admin',
-    'ADMIN'
-  ),
-  (
-    '33333333-3333-3333-3333-333333333333',
-    'Customer B',
-    'CUSTOMER'
-  );
+-- Profiles are provisioned by the on_auth_user_created trigger
+-- (migration 20260929000000_provision_profile_on_signup). This suite only
+-- needs to set the fixture attributes it depends on.
+update public.profiles
+set full_name = 'Customer A'
+where id = '11111111-1111-1111-1111-111111111111';
+
+update public.profiles
+set full_name = 'Admin', role = 'ADMIN'
+where id = '22222222-2222-2222-2222-222222222222';
+
+update public.profiles
+set full_name = 'Customer B'
+where id = '33333333-3333-3333-3333-333333333333';
 
 -- Category
 insert into public.categories (

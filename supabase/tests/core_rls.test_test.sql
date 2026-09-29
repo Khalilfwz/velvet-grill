@@ -24,28 +24,20 @@ values
     'other@test.local'
   );
 
--- Application profiles
-insert into public.profiles (
-  id,
-  full_name,
-  role
-)
-values
-  (
-    '11111111-1111-1111-1111-111111111111',
-    'Test Customer',
-    'CUSTOMER'
-  ),
-  (
-    '22222222-2222-2222-2222-222222222222',
-    'Test Admin',
-    'ADMIN'
-  ),
-  (
-    '33333333-3333-3333-3333-333333333333',
-    'Other Customer',
-    'CUSTOMER'
-  );
+-- Profiles are provisioned by the on_auth_user_created trigger
+-- (migration 20260929000000_provision_profile_on_signup). This suite only
+-- needs to set the fixture attributes it depends on.
+update public.profiles
+set full_name = 'Test Customer'
+where id = '11111111-1111-1111-1111-111111111111';
+
+update public.profiles
+set full_name = 'Test Admin', role = 'ADMIN'
+where id = '22222222-2222-2222-2222-222222222222';
+
+update public.profiles
+set full_name = 'Other Customer'
+where id = '33333333-3333-3333-3333-333333333333';
 
 -- Categories
 insert into public.categories (
