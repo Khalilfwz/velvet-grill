@@ -2,11 +2,13 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
+import ProductOptions from '@/components/catalog/ProductOptions'
 import {
   getProductImageUrl,
   orderProductImages,
   selectPrimaryImage,
 } from '@/lib/catalog/product-images'
+import { buildProductOptionGroups } from '@/lib/catalog/product-options'
 
 export default async function ProductPage({
   params,
@@ -19,7 +21,7 @@ export default async function ProductPage({
   const { data: product, error } = await supabase
     .from('products')
     .select(
-      'id, name, description, base_price, categories(is_active), product_images(id, storage_path, alt_text, is_primary, sort_order, created_at)'
+      'id, name, description, base_price, categories(is_active), product_images(id, storage_path, alt_text, is_primary, sort_order, created_at), product_option_groups(id, name, selection_type, min_selections, max_selections, is_required, sort_order, is_active, product_options(id, group_id, name, price_delta, is_available, sort_order))'
     )
     .eq('slug', slug)
     .eq('is_available', true)
@@ -47,6 +49,13 @@ export default async function ProductPage({
     : null
   const extraImages = orderProductImages(product.product_images).filter(
     (image) => image.id !== heroImage?.id
+  )
+
+  const optionGroups = buildProductOptionGroups(
+    product.product_option_groups ?? [],
+    (product.product_option_groups ?? []).flatMap(
+      (group) => group.product_options ?? []
+    )
   )
 
   return (
@@ -77,13 +86,17 @@ export default async function ProductPage({
           </p>
         )}
 
-        <p className="mt-6 text-2xl font-medium text-brand">
-          {new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            maximumFractionDigits: 0,
-          }).format(product.base_price)}
-        </p>
+        {optionGroups.length === 0 ? (
+          <p className="mt-6 text-2xl font-medium text-brand">
+            {new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+              maximumFractionDigits: 0,
+            }).format(product.base_price)}
+          </p>
+        ) : (
+          <ProductOptions basePrice={product.base_price} groups={optionGroups} />
+        )}
 
         {extraImages.length > 0 && (
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
