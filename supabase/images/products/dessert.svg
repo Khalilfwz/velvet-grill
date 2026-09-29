@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Placeholder dessert image">
+  <rect width="800" height="600" fill="#F5F1E8"/>
+  <path d="M260 420 L400 180 L540 420 Z" fill="#5A1E2B" opacity="0.85"/>
+  <rect x="240" y="420" width="320" height="30" rx="15" fill="#5A1E2B" opacity="0.35"/>
+  <circle cx="400" cy="170" r="20" fill="#5A1E2B" opacity="0.6"/>
+</svg>

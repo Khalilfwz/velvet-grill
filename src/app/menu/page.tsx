@@ -1,5 +1,10 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import ProductImage from '@/components/catalog/ProductImage'
+import {
+  getProductImageUrl,
+  selectPrimaryImage,
+} from '@/lib/catalog/product-images'
 
 export default async function MenuPage() {
   const supabase = await createClient()
@@ -13,7 +18,9 @@ export default async function MenuPage() {
       .order('name'),
     supabase
       .from('products')
-      .select('id, name, description, base_price, category_id, slug')
+      .select(
+        'id, name, description, base_price, category_id, slug, product_images(id, storage_path, alt_text, is_primary, sort_order, created_at)'
+      )
       .eq('is_available', true)
       .order('name'),
   ])
@@ -89,32 +96,54 @@ export default async function MenuPage() {
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {group.products.map((product) => (
-                  <article key={product.id}>
-                    <Link
-                      href={`/menu/${product.slug}`}
-                      className="block h-full rounded-xl border border-border bg-surface p-6 shadow-sm transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                    >
-                      <h3 className="font-display text-xl font-semibold text-foreground">
-                        {product.name}
-                      </h3>
+                {group.products.map((product) => {
+                  const primaryImage = selectPrimaryImage(
+                    product.product_images
+                  )
 
-                      {product.description && (
-                        <p className="mt-2 text-sm leading-6 text-zinc-600">
-                          {product.description}
-                        </p>
-                      )}
+                  return (
+                    <article key={product.id}>
+                      <Link
+                        href={`/menu/${product.slug}`}
+                        className="block h-full overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                      >
+                        <ProductImage
+                          src={
+                            primaryImage
+                              ? getProductImageUrl(
+                                  supabase,
+                                  primaryImage.storage_path
+                                )
+                              : null
+                          }
+                          alt=""
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="aspect-[4/3] w-full"
+                        />
 
-                      <p className="mt-4 font-medium text-brand">
-                        {new Intl.NumberFormat('id-ID', {
-                          style: 'currency',
-                          currency: 'IDR',
-                          maximumFractionDigits: 0,
-                        }).format(product.base_price)}
-                      </p>
-                    </Link>
-                  </article>
-                ))}
+                        <div className="p-6">
+                          <h3 className="font-display text-xl font-semibold text-foreground">
+                            {product.name}
+                          </h3>
+
+                          {product.description && (
+                            <p className="mt-2 text-sm leading-6 text-zinc-600">
+                              {product.description}
+                            </p>
+                          )}
+
+                          <p className="mt-4 font-medium text-brand">
+                            {new Intl.NumberFormat('id-ID', {
+                              style: 'currency',
+                              currency: 'IDR',
+                              maximumFractionDigits: 0,
+                            }).format(product.base_price)}
+                          </p>
+                        </div>
+                      </Link>
+                    </article>
+                  )
+                })}
               </div>
             </section>
           ))}

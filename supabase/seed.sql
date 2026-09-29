@@ -561,3 +561,100 @@ values (
   'IDR',
   'Asia/Jakarta'
 );
+
+-- ------------------------------------------------------------
+-- Product Images
+--
+-- Placeholder images (supabase/images/products/*.svg) seeded into the
+-- product-images storage bucket. Replace with real photography later.
+-- ------------------------------------------------------------
+
+insert into public.product_images (
+  id,
+  product_id,
+  storage_path,
+  alt_text,
+  sort_order,
+  is_primary
+)
+values
+
+-- Steak & Main Course
+(
+  '70000000-0000-0000-0000-000000000001',
+  '20000000-0000-0000-0000-000000000001',
+  'steak.svg',
+  'Wagyu ribeye steak, grilled to order',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000002',
+  '20000000-0000-0000-0000-000000000001',
+  'plating.svg',
+  'Wagyu ribeye steak served with sides',
+  1,
+  false
+),
+(
+  '70000000-0000-0000-0000-000000000003',
+  '20000000-0000-0000-0000-000000000002',
+  'steak.svg',
+  'Tenderloin steak with truffle sauce',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000004',
+  '20000000-0000-0000-0000-000000000003',
+  'steak.svg',
+  'Grilled salmon fillet',
+  0,
+  true
+),
+
+-- Fast Food & Casual Bites
+(
+  '70000000-0000-0000-0000-000000000005',
+  '20000000-0000-0000-0000-000000000005',
+  'burger.svg',
+  'Velvet Classic Burger',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000006',
+  '20000000-0000-0000-0000-000000000006',
+  'burger.svg',
+  'Double cheese burger',
+  0,
+  true
+),
+
+-- Drinks
+(
+  '70000000-0000-0000-0000-000000000007',
+  '20000000-0000-0000-0000-000000000010',
+  'drink.svg',
+  'Velvet Sunset signature mocktail',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000008',
+  '20000000-0000-0000-0000-000000000012',
+  'drink.svg',
+  'Iced coffee',
+  0,
+  true
+),
+
+-- Dessert
+(
+  '70000000-0000-0000-0000-000000000009',
+  '20000000-0000-0000-0000-000000000014',
+  'dessert.svg',
+  'Molten chocolate lava cake',
+  0,
+  true
+);
