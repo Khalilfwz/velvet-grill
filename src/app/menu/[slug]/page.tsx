@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ProductOptions from '@/components/catalog/ProductOptions'
+import WishlistButton from '@/components/wishlist/WishlistButton'
 import {
   getProductImageUrl,
   orderProductImages,
@@ -58,6 +59,21 @@ export default async function ProductPage({
     )
   )
 
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const isAuthenticated = Boolean(claimsData?.claims)
+
+  let initialSaved = false
+
+  if (isAuthenticated) {
+    const { data: savedItem } = await supabase
+      .from('wishlist_items')
+      .select('id')
+      .eq('product_id', product.id)
+      .maybeSingle()
+
+    initialSaved = Boolean(savedItem)
+  }
+
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-4xl">
@@ -85,6 +101,14 @@ export default async function ProductPage({
             {product.description}
           </p>
         )}
+
+        <div className="mt-6">
+          <WishlistButton
+            productId={product.id}
+            initialSaved={initialSaved}
+            isAuthenticated={isAuthenticated}
+          />
+        </div>
 
         {optionGroups.length === 0 ? (
           <p className="mt-6 text-2xl font-medium text-brand">
