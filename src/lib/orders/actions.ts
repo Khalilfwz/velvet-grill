@@ -18,6 +18,11 @@ const INVALID_SELECTION_ERROR =
 const TABLE_ERROR = 'The selected table is not available.'
 const DETAILS_ERROR = 'Please check your order details and try again.'
 
+// Single, non-revealing coupon message. The database raises one unified error
+// for every coupon-unavailable condition (unknown, inactive, out of window,
+// minimum not met, usage limits), so the UI must not distinguish them either.
+const COUPON_ERROR = 'Coupon is invalid or unavailable.'
+
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -29,8 +34,9 @@ type CreateOrderArgs = Database['public']['Functions']['create_order']['Args']
 
 // Supabase typegen declares every RPC parameter non-nullable, but exactly these
 // four are intentionally NULL for the fulfillment type they do not apply to.
-// Widening is limited to those keys; identity, name, and the idempotency key
-// stay non-nullable.
+// Widening is limited to those keys; identity, name, the idempotency key and
+// the (untrusted) coupon code stay non-nullable — an empty coupon string is
+// normalised to "no coupon" by create_order.
 type CreateOrderPayload = Omit<
   CreateOrderArgs,
   | 'p_customer_phone'
@@ -60,6 +66,8 @@ function mapRpcError(message: string): string {
       return INVALID_SELECTION_ERROR
     case 'The selected table is not available':
       return TABLE_ERROR
+    case 'Coupon is invalid or unavailable':
+      return COUPON_ERROR
     case 'Order key is invalid':
     case 'Customer name is invalid':
     case 'Customer phone is invalid':
@@ -84,6 +92,9 @@ export async function placeOrder(
   const pickupAtRaw = String(formData.get('pickupAt') ?? '').trim()
   const tableIdRaw = String(formData.get('tableId') ?? '').trim()
   const idempotencyKey = String(formData.get('idempotencyKey') ?? '').trim()
+  // Untrusted identifier only. The schema sets no length limit on
+  // coupons.code, so none is invented here; an empty value means "no coupon".
+  const couponCode = String(formData.get('couponCode') ?? '').trim()
 
   if (fulfillmentType !== 'PICKUP' && fulfillmentType !== 'DINE_IN') {
     return { error: DETAILS_ERROR }
@@ -140,6 +151,7 @@ export async function placeOrder(
     p_pickup_at: pickupAt,
     p_restaurant_table_id: tableId,
     p_idempotency_key: idempotencyKey,
+    p_coupon_code: couponCode,
   }
 
   let orderId: string | null = null

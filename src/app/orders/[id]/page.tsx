@@ -38,7 +38,7 @@ export default async function OrderPage({
   const { data: order, error } = await supabase
     .from('orders')
     .select(
-      'id, order_number, order_status, payment_status, fulfillment_type, pickup_at, table_number_snapshot, customer_name_snapshot, customer_note, subtotal, discount_total, final_total, created_at, order_items(id, product_name_snapshot, base_price_snapshot, final_unit_price, quantity, subtotal, order_item_options(id, option_group_name_snapshot, option_name_snapshot, price_delta_snapshot))'
+      'id, order_number, order_status, payment_status, fulfillment_type, pickup_at, table_number_snapshot, customer_name_snapshot, customer_note, subtotal, discount_total, final_total, coupon_code_snapshot, created_at, order_items(id, product_name_snapshot, base_price_snapshot, final_unit_price, quantity, subtotal, order_item_options(id, option_group_name_snapshot, option_name_snapshot, price_delta_snapshot))'
     )
     .eq('id', id)
     .maybeSingle()
@@ -169,6 +169,15 @@ export default async function OrderPage({
                 {formatIDR(order.discount_total)}
               </dd>
             </div>
+
+            {order.coupon_code_snapshot && (
+              <div className="flex justify-between">
+                <dt className="text-zinc-600">Coupon</dt>
+                <dd className="text-foreground">
+                  {order.coupon_code_snapshot}
+                </dd>
+              </div>
+            )}
 
             <div className="flex justify-between">
               <dt className="font-medium text-foreground">Total</dt>

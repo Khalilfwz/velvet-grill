@@ -164,7 +164,7 @@ values (
 select is(
   has_function_privilege(
     'anon',
-    'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text)',
+    'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text,text)',
     'EXECUTE'
   ),
   false,
@@ -175,7 +175,7 @@ select is(
 select is(
   has_function_privilege(
     'authenticated',
-    'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text)',
+    'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text,text)',
     'EXECUTE'
   ),
   true,

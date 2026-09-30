@@ -236,7 +236,7 @@ select is(
     from pg_proc p
     cross join lateral unnest(p.proargnames) as arg_name
     where p.oid =
-      'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text)'::regprocedure
+      'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text,text)'::regprocedure
       and arg_name ilike any (
         array['%price%', '%subtotal%', '%total%', '%discount%', '%amount%']
       )

@@ -1147,6 +1147,7 @@ export type Database = {
     Functions: {
       create_order: {
         Args: {
+          p_coupon_code?: string
           p_customer_name: string
           p_customer_note: string
           p_customer_phone: string

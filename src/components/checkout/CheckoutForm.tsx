@@ -46,6 +46,17 @@ export default function CheckoutForm({
     initialTableId ? 'DINE_IN' : 'PICKUP'
   )
 
+  // React resets the DOM form once a form action completes, which reverts every
+  // uncontrolled control to its default and would discard what the customer
+  // typed after a rejected submit. These fields are therefore controlled, so
+  // React re-applies their values on the post-action re-render.
+  const [pickupAt, setPickupAt] = useState('')
+  const [tableId, setTableId] = useState(initialTableId ?? '')
+  const [customerName, setCustomerName] = useState(defaultName)
+  const [customerPhone, setCustomerPhone] = useState(defaultPhone)
+  const [couponCode, setCouponCode] = useState('')
+  const [customerNote, setCustomerNote] = useState('')
+
   return (
     <form action={formAction} className="space-y-6">
       {/* Identifier only, generated once per rendered form so retries reuse it. */}
@@ -102,6 +113,8 @@ export default function CheckoutForm({
             name="pickupAt"
             type="datetime-local"
             required
+            value={pickupAt}
+            onChange={(event) => setPickupAt(event.target.value)}
             className={fieldClasses}
           />
         </div>
@@ -114,7 +127,19 @@ export default function CheckoutForm({
             id="tableId"
             name="tableId"
             required
-            defaultValue={initialTableId ?? ''}
+            value={tableId}
+            onChange={(event) => setTableId(event.target.value)}
+            // React writes a controlled select's value only when the prop
+            // changes, so the DOM reset that follows a completed form action
+            // (which falls back to the first non-disabled option) would leave
+            // the visible table disagreeing with `tableId` — and a retry would
+            // then submit that wrong value. Re-assert the DOM selection on
+            // every render so the select and the React state always agree.
+            ref={(element) => {
+              if (element) {
+                element.value = tableId
+              }
+            }}
             className={fieldClasses}
           >
             <option value="" disabled>
@@ -144,7 +169,8 @@ export default function CheckoutForm({
           type="text"
           required
           maxLength={120}
-          defaultValue={defaultName}
+          value={customerName}
+          onChange={(event) => setCustomerName(event.target.value)}
           className={fieldClasses}
         />
       </div>
@@ -158,9 +184,31 @@ export default function CheckoutForm({
           name="customerPhone"
           type="tel"
           maxLength={32}
-          defaultValue={defaultPhone}
+          value={customerPhone}
+          onChange={(event) => setCustomerPhone(event.target.value)}
           className={fieldClasses}
         />
+      </div>
+
+      <div>
+        <label htmlFor="couponCode" className={labelClasses}>
+          Coupon code{' '}
+          <span className="font-normal text-zinc-600">(optional)</span>
+        </label>
+        <input
+          id="couponCode"
+          name="couponCode"
+          type="text"
+          autoComplete="off"
+          spellCheck={false}
+          value={couponCode}
+          onChange={(event) => setCouponCode(event.target.value)}
+          className={fieldClasses}
+        />
+        <p className="mt-1 text-sm text-zinc-600">
+          Applied when you place the order; any discount appears on your order
+          confirmation.
+        </p>
       </div>
 
       <div>
@@ -172,6 +220,8 @@ export default function CheckoutForm({
           name="customerNote"
           rows={3}
           maxLength={500}
+          value={customerNote}
+          onChange={(event) => setCustomerNote(event.target.value)}
           className={fieldClasses}
         />
       </div>
@@ -192,8 +242,8 @@ export default function CheckoutForm({
         )}
 
         <p className="mt-2 text-sm text-zinc-600">
-          Estimates only. Final pricing is confirmed by the restaurant when your
-          order is placed.
+          Estimates only, before any coupon discount. Final pricing is confirmed
+          by the restaurant when your order is placed.
         </p>
       </div>
 
