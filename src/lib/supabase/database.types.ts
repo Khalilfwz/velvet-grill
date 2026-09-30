@@ -616,6 +616,7 @@ export type Database = {
           final_total: number
           fulfillment_type: Database["public"]["Enums"]["order_fulfillment_type"]
           id: string
+          idempotency_key: string | null
           order_number: string
           order_status: Database["public"]["Enums"]["order_status"]
           payment_status: Database["public"]["Enums"]["payment_status"]
@@ -637,6 +638,7 @@ export type Database = {
           final_total: number
           fulfillment_type: Database["public"]["Enums"]["order_fulfillment_type"]
           id?: string
+          idempotency_key?: string | null
           order_number: string
           order_status?: Database["public"]["Enums"]["order_status"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
@@ -658,6 +660,7 @@ export type Database = {
           final_total?: number
           fulfillment_type?: Database["public"]["Enums"]["order_fulfillment_type"]
           id?: string
+          idempotency_key?: string | null
           order_number?: string
           order_status?: Database["public"]["Enums"]["order_status"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
@@ -1142,7 +1145,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_order: {
+        Args: {
+          p_customer_name: string
+          p_customer_note: string
+          p_customer_phone: string
+          p_fulfillment_type: Database["public"]["Enums"]["order_fulfillment_type"]
+          p_idempotency_key: string
+          p_pickup_at: string
+          p_restaurant_table_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       coupon_discount_type: "PERCENTAGE" | "FIXED_AMOUNT"
