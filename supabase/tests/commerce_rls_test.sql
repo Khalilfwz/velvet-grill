@@ -773,13 +773,20 @@ select ok(
 );
 
 -- 27
+-- Scoped to this suite's own fixture orders so unrelated local development or
+-- E2E rows cannot change the result. The property under test is unchanged: an
+-- admin may read all orders, not only their own.
 select is(
   (
     select count(*)
     from public.orders
+    where id in (
+      '90909090-9090-9090-9090-909090909090',
+      '91919191-9191-9191-9191-919191919191'
+    )
   ),
   2::bigint,
-  'Admin can read all orders'
+  'Admin can read all fixture orders'
 );
 
 -- 28

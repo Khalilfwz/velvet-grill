@@ -244,10 +244,19 @@ set local role authenticated;
 set local request.jwt.claim.sub =
   'a2222222-2222-2222-2222-222222222222';
 
+-- Scoped to this suite's own fixture profiles so unrelated local development
+-- or E2E rows cannot change the result. The property under test is unchanged:
+-- an active admin may read all profiles, not only their own.
 select is(
   (
     select count(*)
     from public.profiles
+    where id in (
+      'a1111111-1111-1111-1111-111111111111',
+      'a2222222-2222-2222-2222-222222222222',
+      'a3333333-3333-3333-3333-333333333333',
+      'a4444444-4444-4444-4444-444444444444'
+    )
   ),
   4::bigint,
   'Active admin can read all fixture profiles'
