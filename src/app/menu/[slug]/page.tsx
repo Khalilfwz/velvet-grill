@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ProductOptions from '@/components/catalog/ProductOptions'
+import AddToCartForm from '@/components/cart/AddToCartForm'
 import WishlistButton from '@/components/wishlist/WishlistButton'
 import {
   getProductImageUrl,
@@ -10,6 +11,7 @@ import {
   selectPrimaryImage,
 } from '@/lib/catalog/product-images'
 import { buildProductOptionGroups } from '@/lib/catalog/product-options'
+import { formatIDR } from '@/lib/format-currency'
 
 export default async function ProductPage({
   params,
@@ -111,15 +113,25 @@ export default async function ProductPage({
         </div>
 
         {optionGroups.length === 0 ? (
-          <p className="mt-6 text-2xl font-medium text-brand">
-            {new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-              maximumFractionDigits: 0,
-            }).format(product.base_price)}
-          </p>
+          <div className="mt-6 space-y-4">
+            <p className="text-2xl font-medium text-brand">
+              {formatIDR(product.base_price)}
+            </p>
+
+            <AddToCartForm
+              productId={product.id}
+              optionIds={[]}
+              complete
+              isAuthenticated={isAuthenticated}
+            />
+          </div>
         ) : (
-          <ProductOptions basePrice={product.base_price} groups={optionGroups} />
+          <ProductOptions
+            basePrice={product.base_price}
+            groups={optionGroups}
+            productId={product.id}
+            isAuthenticated={isAuthenticated}
+          />
         )}
 
         {extraImages.length > 0 && (

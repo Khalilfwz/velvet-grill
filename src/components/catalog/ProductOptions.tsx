@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { formatIDR } from '@/lib/format-currency'
+import AddToCartForm from '@/components/cart/AddToCartForm'
 import {
   canSelect,
   clearGroupSelection,
@@ -25,16 +26,21 @@ const focusClasses =
 type ProductOptionsProps = {
   basePrice: number
   groups: ProductOptionGroup[]
+  productId?: string
+  isAuthenticated?: boolean
 }
 
 export default function ProductOptions({
   basePrice,
   groups,
+  productId,
+  isAuthenticated = false,
 }: ProductOptionsProps) {
   const [selections, setSelections] = useState<OptionSelections>({})
 
   const complete = isSelectionComplete(groups, selections)
   const amount = basePrice + optionDeltaTotal(groups, selections)
+  const selectedOptionIds = Object.values(selections).flat()
 
   return (
     <div className="mt-6 space-y-6">
@@ -129,9 +135,9 @@ export default function ProductOptions({
       })}
 
       {/*
-        Preview only. The browser is never authoritative for pricing: nothing is
-        submitted here, and any future cart/order write must recompute the price
-        and re-validate option membership server-side from the database.
+        Display estimate only. The client is never authoritative: the submitted
+        ids are re-validated against the database by the cart Server Action,
+        which recomputes option membership and availability server-side.
       */}
       <div role="status" className="border-t border-border pt-4">
         <p className="flex flex-wrap items-baseline gap-x-2">
@@ -149,6 +155,15 @@ export default function ProductOptions({
           </p>
         )}
       </div>
+
+      {productId && (
+        <AddToCartForm
+          productId={productId}
+          optionIds={selectedOptionIds}
+          complete={complete}
+          isAuthenticated={isAuthenticated}
+        />
+      )}
     </div>
   )
 }
