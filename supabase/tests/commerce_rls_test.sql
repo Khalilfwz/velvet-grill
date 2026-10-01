@@ -673,17 +673,14 @@ select is(
 set local request.jwt.claim.sub =
   '11111111-1111-1111-1111-111111111111';
 
-update public.orders
-set order_status = 'PREPARING'
-where id = '90909090-9090-9090-9090-909090909090';
-
-select is(
-  (
-    select order_status
-    from public.orders
+select throws_ok(
+  $$
+    update public.orders
+    set order_status = 'PREPARING'
     where id = '90909090-9090-9090-9090-909090909090'
-  ),
-  'CONFIRMED'::public.order_status,
+  $$,
+  '42501',
+  null,
   'Customer cannot change order status'
 );
 
@@ -791,9 +788,13 @@ select is(
   (
     select count(*)
     from public.payments
+    where id in (
+      '94949494-9494-9494-9494-949494949494',
+      '95959595-9595-9595-9595-959595959595'
+    )
   ),
   2::bigint,
-  'Admin can read all payments'
+  'Admin can read all fixture payments'
 );
 
 -- 29

@@ -1163,6 +1163,14 @@ export type Database = {
         }
         Returns: string
       }
+      update_order_status: {
+        Args: {
+          p_note?: string
+          p_order_id: string
+          p_to_status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: Database["public"]["Enums"]["order_status"]
+      }
     }
     Enums: {
       coupon_discount_type: "PERCENTAGE" | "FIXED_AMOUNT"
