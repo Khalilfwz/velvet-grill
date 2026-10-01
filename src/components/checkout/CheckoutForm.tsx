@@ -4,6 +4,11 @@ import { useActionState, useState } from 'react'
 import { placeOrder } from '@/lib/orders/actions'
 import type { PlaceOrderState } from '@/lib/orders/actions'
 import { formatIDR } from '@/lib/format-currency'
+import {
+  PAYMENT_METHODS,
+  PAYMENT_METHOD_LABELS,
+  type PaymentMethod,
+} from '@/lib/orders/payment'
 
 const focusClasses =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
@@ -52,6 +57,7 @@ export default function CheckoutForm({
   // React re-applies their values on the post-action re-render.
   const [pickupAt, setPickupAt] = useState('')
   const [tableId, setTableId] = useState(initialTableId ?? '')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
   const [customerName, setCustomerName] = useState(defaultName)
   const [customerPhone, setCustomerPhone] = useState(defaultPhone)
   const [couponCode, setCouponCode] = useState('')
@@ -97,6 +103,46 @@ export default function CheckoutForm({
               />
               <span className="text-foreground">
                 {value === 'PICKUP' ? 'Pickup' : 'Dine-in'}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className={labelClasses}>Payment</legend>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {PAYMENT_METHODS.map((value) => (
+            <label
+              key={value}
+              className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${
+                paymentMethod === value
+                  ? 'border-brand bg-surface'
+                  : 'border-border bg-surface hover:border-brand'
+              }`}
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value={value}
+                required
+                checked={paymentMethod === value}
+                onChange={() => setPaymentMethod(value)}
+                // React writes `checked` only when the prop changes, so a
+                // browser-native selection or the DOM reset that follows a
+                // completed form action could leave the visible radio, and the
+                // submitted value, out of step with `paymentMethod`. Re-assert
+                // the DOM state on every render.
+                ref={(element) => {
+                  if (element) {
+                    element.checked = paymentMethod === value
+                  }
+                }}
+                className={`h-4 w-4 accent-brand ${focusClasses}`}
+              />
+              <span className="text-foreground">
+                {PAYMENT_METHOD_LABELS[value]}
               </span>
             </label>
           ))}

@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatIDR } from '@/lib/format-currency'
+import ConfirmPaymentButton from '@/components/orders/ConfirmPaymentButton'
+import { paymentMethodLabel, paymentStatusLabel } from '@/lib/orders/payment'
 
 const focusClasses =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
@@ -38,7 +40,7 @@ export default async function OrderPage({
   const { data: order, error } = await supabase
     .from('orders')
     .select(
-      'id, order_number, order_status, payment_status, fulfillment_type, pickup_at, table_number_snapshot, customer_name_snapshot, customer_note, subtotal, discount_total, final_total, coupon_code_snapshot, created_at, order_items(id, product_name_snapshot, base_price_snapshot, final_unit_price, quantity, subtotal, order_item_options(id, option_group_name_snapshot, option_name_snapshot, price_delta_snapshot))'
+      'id, order_number, order_status, payment_status, fulfillment_type, pickup_at, table_number_snapshot, customer_name_snapshot, customer_note, subtotal, discount_total, final_total, coupon_code_snapshot, created_at, payments(method, status, paid_at), order_items(id, product_name_snapshot, base_price_snapshot, final_unit_price, quantity, subtotal, order_item_options(id, option_group_name_snapshot, option_name_snapshot, price_delta_snapshot))'
     )
     .eq('id', id)
     .maybeSingle()
@@ -60,6 +62,12 @@ export default async function OrderPage({
   }
 
   const items = order.order_items ?? []
+
+  // FR-17 requires exactly one payment row per order. Historical/seeded orders
+  // (created before FR-17) have none, so the method falls back to "—"; the
+  // aggregate state always comes from orders.payment_status.
+  const payments = order.payments ?? []
+  const payment = payments.length === 1 ? payments[0] : null
 
   return (
     <main className="min-h-screen bg-background px-6 py-12">
@@ -87,6 +95,20 @@ export default async function OrderPage({
               <dt className="text-zinc-600">Fulfillment</dt>
               <dd className="font-medium text-foreground">
                 {order.fulfillment_type === 'PICKUP' ? 'Pickup' : 'Dine-in'}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-zinc-600">Payment</dt>
+              <dd className="font-medium text-foreground">
+                {payment ? paymentMethodLabel(payment.method) : '—'}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-zinc-600">Payment status</dt>
+              <dd className="font-medium text-foreground">
+                {paymentStatusLabel(order.payment_status)}
               </dd>
             </div>
 
@@ -120,6 +142,25 @@ export default async function OrderPage({
           {order.customer_note && (
             <p className="mt-4 text-sm text-zinc-600">Note: {order.customer_note}</p>
           )}
+
+          {/* Offer a payment action only when the order and the single payment
+              row agree on the state; inconsistent state is left untouched. */}
+          {payment &&
+            (payment.method === 'DUMMY_QRIS' ||
+              payment.method === 'DUMMY_BANK_TRANSFER') &&
+            payment.status === 'PENDING' &&
+            order.payment_status === 'PENDING' && (
+              <ConfirmPaymentButton orderId={order.id} />
+            )}
+
+          {payment &&
+            payment.method === 'CASH' &&
+            payment.status === 'UNPAID' &&
+            order.payment_status === 'UNPAID' && (
+              <p className="mt-4 text-sm text-zinc-600">
+                Pay with cash at fulfillment.
+              </p>
+            )}
         </section>
 
         <section className="mt-6 rounded-xl border border-border bg-surface p-6 shadow-sm">

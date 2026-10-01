@@ -131,7 +131,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-15 Customer', null, null,
-      now() + interval '2 hours', null, 'fr15-snapshot-key'
+      now() + interval '2 hours', null, 'fr15-snapshot-key', 'CASH'
     )::text
   ),
   true

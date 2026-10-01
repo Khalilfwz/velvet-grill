@@ -1145,6 +1145,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirm_order_payment: {
+        Args: { p_order_id: string }
+        Returns: Database["public"]["Enums"]["payment_status"]
+      }
       create_order: {
         Args: {
           p_coupon_code?: string
@@ -1153,6 +1157,7 @@ export type Database = {
           p_customer_phone: string
           p_fulfillment_type: Database["public"]["Enums"]["order_fulfillment_type"]
           p_idempotency_key: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
           p_pickup_at: string
           p_restaurant_table_id: string
         }

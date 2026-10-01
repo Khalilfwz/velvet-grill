@@ -4,8 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/database.types'
+import { isPaymentMethod } from '@/lib/orders/payment'
 
 export type PlaceOrderState = {
+  error: string | null
+}
+
+export type ConfirmPaymentState = {
   error: string | null
 }
 
@@ -22,6 +27,8 @@ const DETAILS_ERROR = 'Please check your order details and try again.'
 // for every coupon-unavailable condition (unknown, inactive, out of window,
 // minimum not met, usage limits), so the UI must not distinguish them either.
 const COUPON_ERROR = 'Coupon is invalid or unavailable.'
+
+const CONFIRM_ERROR = 'We could not confirm your payment. Please try again.'
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -68,6 +75,8 @@ function mapRpcError(message: string): string {
       return TABLE_ERROR
     case 'Coupon is invalid or unavailable':
       return COUPON_ERROR
+    case 'Payment method is invalid':
+      return DETAILS_ERROR
     case 'Order key is invalid':
     case 'Customer name is invalid':
     case 'Customer phone is invalid':
@@ -95,8 +104,13 @@ export async function placeOrder(
   // Untrusted identifier only. The schema sets no length limit on
   // coupons.code, so none is invented here; an empty value means "no coupon".
   const couponCode = String(formData.get('couponCode') ?? '').trim()
+  const paymentMethod = String(formData.get('paymentMethod') ?? '')
 
   if (fulfillmentType !== 'PICKUP' && fulfillmentType !== 'DINE_IN') {
+    return { error: DETAILS_ERROR }
+  }
+
+  if (!isPaymentMethod(paymentMethod)) {
     return { error: DETAILS_ERROR }
   }
 
@@ -151,6 +165,7 @@ export async function placeOrder(
     p_pickup_at: pickupAt,
     p_restaurant_table_id: tableId,
     p_idempotency_key: idempotencyKey,
+    p_payment_method: paymentMethod,
     p_coupon_code: couponCode,
   }
 
@@ -181,4 +196,53 @@ export async function placeOrder(
   // Success: revalidated outside the catch, then a deterministic redirect.
   revalidatePath('/cart')
   redirect(`/orders/${orderId}`)
+}
+
+/**
+ * Confirms the authenticated customer's own pending digital payment. The RPC
+ * is the only writer of payment state: the browser submits an order id, and
+ * the database re-derives identity, ownership, method authorization, and the
+ * legal source state. Any failure collapses to one generic message.
+ */
+export async function confirmOrderPayment(
+  _previousState: ConfirmPaymentState,
+  formData: FormData
+): Promise<ConfirmPaymentState> {
+  const orderId = String(formData.get('orderId') ?? '').trim()
+
+  if (!UUID_PATTERN.test(orderId)) {
+    return { error: CONFIRM_ERROR }
+  }
+
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getClaims()
+  const claims = data?.claims
+  const userId = typeof claims?.sub === 'string' ? claims.sub : null
+
+  // Session check stays outside the catch so redirect control flow propagates.
+  if (!userId) {
+    redirect('/login')
+  }
+
+  let failed = false
+
+  try {
+    const { error } = await supabase.rpc('confirm_order_payment', {
+      p_order_id: orderId,
+    })
+
+    if (error) {
+      failed = true
+    }
+  } catch {
+    return { error: CONFIRM_ERROR }
+  }
+
+  if (failed) {
+    return { error: CONFIRM_ERROR }
+  }
+
+  revalidatePath(`/orders/${orderId}`)
+
+  return { error: null }
 }

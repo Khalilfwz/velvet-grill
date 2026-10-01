@@ -316,7 +316,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-pct', 'FR16-PCT10'
+      now() + interval '2 hours', null, 'fr16-pct', 'DUMMY_QRIS', 'FR16-PCT10'
     )::text
   ),
   true
@@ -363,7 +363,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-cap', 'FR16-CAP'
+      now() + interval '2 hours', null, 'fr16-cap', 'DUMMY_QRIS', 'FR16-CAP'
     )::text
   ),
   true
@@ -409,7 +409,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-fixed', 'FR16-FIXED'
+      now() + interval '2 hours', null, 'fr16-fixed', 'DUMMY_QRIS', 'FR16-FIXED'
     )::text
   ),
   true
@@ -455,7 +455,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-clamp', 'FR16-CLAMP'
+      now() + interval '2 hours', null, 'fr16-clamp', 'DUMMY_QRIS', 'FR16-CLAMP'
     )::text
   ),
   true
@@ -504,7 +504,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-reject-unknown', 'FR16-NOPE'
+      now() + interval '2 hours', null, 'fr16-reject-unknown', 'DUMMY_QRIS', 'FR16-NOPE'
     )
   $$,
   '22023',
@@ -517,7 +517,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-reject-inactive', 'FR16-INACTIVE'
+      now() + interval '2 hours', null, 'fr16-reject-inactive', 'DUMMY_QRIS', 'FR16-INACTIVE'
     )
   $$,
   '22023',
@@ -530,7 +530,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-reject-future', 'FR16-FUTURE'
+      now() + interval '2 hours', null, 'fr16-reject-future', 'DUMMY_QRIS', 'FR16-FUTURE'
     )
   $$,
   '22023',
@@ -543,7 +543,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-reject-expired', 'FR16-EXPIRED'
+      now() + interval '2 hours', null, 'fr16-reject-expired', 'DUMMY_QRIS', 'FR16-EXPIRED'
     )
   $$,
   '22023',
@@ -556,7 +556,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-reject-min', 'FR16-MIN'
+      now() + interval '2 hours', null, 'fr16-reject-min', 'DUMMY_QRIS', 'FR16-MIN'
     )
   $$,
   '22023',
@@ -569,7 +569,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-reject-usage', 'FR16-USAGELIMIT'
+      now() + interval '2 hours', null, 'fr16-reject-usage', 'DUMMY_QRIS', 'FR16-USAGELIMIT'
     )
   $$,
   '22023',
@@ -582,7 +582,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-16 Customer', null, null,
-      now() + interval '2 hours', null, 'fr16-reject-percustomer', 'FR16-PERCUST'
+      now() + interval '2 hours', null, 'fr16-reject-percustomer', 'DUMMY_QRIS', 'FR16-PERCUST'
     )
   $$,
   '22023',

@@ -527,17 +527,14 @@ select throws_ok(
 );
 
 -- 14
-update public.payments
-set status = 'PAID'
-where id = '94949494-9494-9494-9494-949494949494';
-
-select is(
-  (
-    select status
-    from public.payments
+select throws_ok(
+  $$
+    update public.payments
+    set status = 'PAID'
     where id = '94949494-9494-9494-9494-949494949494'
-  ),
-  'PENDING'::public.payment_status,
+  $$,
+  '42501',
+  null,
   'Customer cannot change payment status'
 );
 
@@ -800,13 +797,17 @@ select is(
 );
 
 -- 29
+-- Scoped to this suite's own fixture coupon so unrelated local development or
+-- E2E rows cannot change the result. The property under test is unchanged: an
+-- admin may read the coupon through normal RLS.
 select is(
   (
     select count(*)
     from public.coupons
+    where id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'
   ),
   1::bigint,
-  'Admin can read coupon data'
+  'Admin can read the fixture coupon'
 );
 
 -- 30
