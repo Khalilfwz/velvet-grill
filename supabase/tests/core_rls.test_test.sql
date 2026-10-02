@@ -282,14 +282,18 @@ select throws_ok(
   'Admin direct product write is denied'
 );
 
--- Test 13: Admin can modify restaurant settings
-select lives_ok(
+-- Test 13: Direct restaurant settings writes are revoked for authenticated
+-- callers; admin settings writes go through the private.is_admin()-gated RPC
+-- (see fr27_admin_operations_test.sql).
+select throws_ok(
   $$
     update public.restaurant_settings
     set restaurant_name = 'Velvet Grill Admin Test'
     where id = 1
   $$,
-  'Admin can modify restaurant settings'
+  '42501',
+  null,
+  'Admin direct restaurant settings write is denied'
 );
 
 -- Test 14: Admin can read another customer profile

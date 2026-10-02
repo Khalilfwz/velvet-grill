@@ -1149,6 +1149,15 @@ export type Database = {
         Args: { p_id: string; p_product_id: string }
         Returns: undefined
       }
+      admin_save_business_hours: {
+        Args: {
+          p_closes_at: string
+          p_day_of_week: number
+          p_is_closed: boolean
+          p_opens_at: string
+        }
+        Returns: string
+      }
       admin_save_category: {
         Args: {
           p_description: string
@@ -1209,6 +1218,24 @@ export type Database = {
           p_product_id: string
           p_sort_order: number
           p_storage_path: string
+        }
+        Returns: string
+      }
+      admin_save_restaurant_settings: {
+        Args: {
+          p_address: string
+          p_phone: string
+          p_restaurant_name: string
+          p_timezone: string
+        }
+        Returns: undefined
+      }
+      admin_save_restaurant_table: {
+        Args: {
+          p_capacity: number
+          p_id: string
+          p_is_active: boolean
+          p_table_number: string
         }
         Returns: string
       }

@@ -419,10 +419,11 @@ set local role authenticated;
 set local request.jwt.claim.sub =
   '22222222-2222-2222-2222-222222222222';
 
--- TEST 11: restaurant_settings UPDATE (non-uuid singleton id)
-update public.restaurant_settings
-set restaurant_name = 'Velvet Grill FR25'
-where id = 1;
+-- TEST 11: restaurant_settings UPDATE via the authoritative RPC (non-uuid
+-- singleton id; direct settings writes are revoked by FR-27).
+select public.admin_save_restaurant_settings(
+  'Velvet Grill FR25', null, null, 'Asia/Jakarta'
+);
 
 reset role;
 

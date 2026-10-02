@@ -38,6 +38,27 @@ export default async function AdminLayout({
             Products
           </Link>
 
+          <Link
+            href="/admin/tables"
+            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
+          >
+            Tables
+          </Link>
+
+          <Link
+            href="/admin/hours"
+            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
+          >
+            Hours
+          </Link>
+
+          <Link
+            href="/admin/settings"
+            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
+          >
+            Settings
+          </Link>
+
           <div className="ml-auto flex items-center gap-4">
             <Link
               href="/menu"

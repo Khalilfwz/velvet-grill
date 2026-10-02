@@ -10,6 +10,9 @@ import {
   productImageSchema,
   optionGroupSchema,
   optionSchema,
+  restaurantTableSchema,
+  businessHoursSchema,
+  restaurantSettingsSchema,
   isUuid,
 } from '@/lib/admin/schemas'
 
@@ -23,11 +26,15 @@ const NOT_FOUND = 'That record no longer exists.'
 const INVALID_RELATIONSHIP =
   'The selected category, product, or group is not valid.'
 const CONFLICT = 'A record with that slug or name already exists.'
+const CONFLICT_TABLE = 'A table with that number already exists.'
 const INVALID_INPUT = 'Please check the submitted values and try again.'
 
 // Controlled SQLSTATEs raised by the admin_* RPCs plus the table constraints they
 // rely on. Anything else collapses to a generic message.
-function mapRpcError(code: string | undefined): string {
+function mapRpcError(
+  code: string | undefined,
+  conflictMessage: string = CONFLICT
+): string {
   switch (code) {
     case '42501':
       return NOT_AUTHORIZED
@@ -36,7 +43,7 @@ function mapRpcError(code: string | undefined): string {
     case '23503':
       return INVALID_RELATIONSHIP
     case '23505':
-      return CONFLICT
+      return conflictMessage
     case '22023':
     case '23514':
       return INVALID_INPUT
@@ -75,12 +82,13 @@ function revalidateCatalog(productSlug?: string): void {
 }
 
 async function runRpc(
-  call: () => PromiseLike<{ error: { code?: string } | null }>
+  call: () => PromiseLike<{ error: { code?: string } | null }>,
+  conflictMessage: string = CONFLICT
 ): Promise<string | null> {
   try {
     const { error } = await call()
 
-    return error ? mapRpcError(error.code) : null
+    return error ? mapRpcError(error.code, conflictMessage) : null
   } catch {
     return GENERIC_ERROR
   }
@@ -397,6 +405,131 @@ export async function saveOption(
 
   revalidateCatalog(str(formData.get('productSlug')).trim() || undefined)
   revalidatePath(`/admin/products/${productId}`)
+
+  return { error: null }
+}
+
+export async function saveRestaurantTable(
+  _previousState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const context = await getAdminContext()
+
+  if (!context) {
+    return { error: NOT_AUTHORIZED }
+  }
+
+  const id = parseId(formData.get('id'))
+
+  if (!id.ok) {
+    return { error: INVALID_INPUT }
+  }
+
+  const parsed = restaurantTableSchema.safeParse({
+    tableNumber: str(formData.get('tableNumber')),
+    capacity: str(formData.get('capacity')),
+    isActive: formData.get('isActive'),
+  })
+
+  if (!parsed.success) {
+    return { error: INVALID_INPUT }
+  }
+
+  const error = await runRpc(
+    () =>
+      context.supabase.rpc('admin_save_restaurant_table', {
+        p_id: id.id,
+        p_table_number: parsed.data.tableNumber,
+        p_capacity: parsed.data.capacity,
+        p_is_active: parsed.data.isActive,
+      } as Database['public']['Functions']['admin_save_restaurant_table']['Args']),
+    CONFLICT_TABLE
+  )
+
+  if (error) {
+    return { error }
+  }
+
+  revalidatePath('/admin/tables')
+  revalidatePath('/checkout')
+
+  return { error: null }
+}
+
+export async function saveBusinessHours(
+  _previousState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const context = await getAdminContext()
+
+  if (!context) {
+    return { error: NOT_AUTHORIZED }
+  }
+
+  const parsed = businessHoursSchema.safeParse({
+    dayOfWeek: str(formData.get('dayOfWeek')),
+    isClosed: formData.get('isClosed'),
+    opensAt: str(formData.get('opensAt')),
+    closesAt: str(formData.get('closesAt')),
+  })
+
+  if (!parsed.success) {
+    return { error: INVALID_INPUT }
+  }
+
+  const error = await runRpc(() =>
+    context.supabase.rpc('admin_save_business_hours', {
+      p_day_of_week: parsed.data.dayOfWeek,
+      p_is_closed: parsed.data.isClosed,
+      p_opens_at: parsed.data.opensAt,
+      p_closes_at: parsed.data.closesAt,
+    } as Database['public']['Functions']['admin_save_business_hours']['Args'])
+  )
+
+  if (error) {
+    return { error }
+  }
+
+  revalidatePath('/admin/hours')
+
+  return { error: null }
+}
+
+export async function saveRestaurantSettings(
+  _previousState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const context = await getAdminContext()
+
+  if (!context) {
+    return { error: NOT_AUTHORIZED }
+  }
+
+  const parsed = restaurantSettingsSchema.safeParse({
+    restaurantName: str(formData.get('restaurantName')),
+    address: str(formData.get('address')),
+    phone: str(formData.get('phone')),
+    timezone: str(formData.get('timezone')),
+  })
+
+  if (!parsed.success) {
+    return { error: INVALID_INPUT }
+  }
+
+  const error = await runRpc(() =>
+    context.supabase.rpc('admin_save_restaurant_settings', {
+      p_restaurant_name: parsed.data.restaurantName,
+      p_address: parsed.data.address,
+      p_phone: parsed.data.phone,
+      p_timezone: parsed.data.timezone,
+    } as Database['public']['Functions']['admin_save_restaurant_settings']['Args'])
+  )
+
+  if (error) {
+    return { error }
+  }
+
+  revalidatePath('/admin/settings')
 
   return { error: null }
 }

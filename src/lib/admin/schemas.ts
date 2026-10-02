@@ -14,6 +14,8 @@ const MAX_SELECTIONS = 1000
 const MAX_PRICE = 9_999_999_999.99
 const MAX_STOCK = 1_000_000
 const MAX_INT = 2_147_483_647
+const MAX_PHONE_LENGTH = 32
+const TIME_PATTERN = /^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/
 
 export function isUuid(value: unknown): value is string {
   return typeof value === 'string' && UUID_PATTERN.test(value)
@@ -149,4 +151,50 @@ export const optionSchema = z.strictObject({
   priceDelta,
   isAvailable: checkbox,
   sortOrder,
+})
+
+const tableCapacity = z
+  .string()
+  .trim()
+  .regex(/^\d+$/)
+  .transform((value) => Number(value))
+  .refine((value) => value >= 1 && value <= MAX_INT)
+
+const dayOfWeek = z
+  .string()
+  .trim()
+  .regex(/^[0-6]$/)
+  .transform((value) => Number(value))
+
+const optionalTime = z
+  .string()
+  .trim()
+  .transform((value) => (value === '' ? null : value))
+  .refine((value) => value === null || TIME_PATTERN.test(value))
+
+export const restaurantTableSchema = z.strictObject({
+  tableNumber: requiredText(MAX_NAME_LENGTH),
+  capacity: tableCapacity,
+  isActive: checkbox,
+})
+
+export const businessHoursSchema = z
+  .strictObject({
+    dayOfWeek,
+    isClosed: checkbox,
+    opensAt: optionalTime,
+    closesAt: optionalTime,
+  })
+  .refine(
+    (value) =>
+      value.isClosed
+        ? value.opensAt === null && value.closesAt === null
+        : value.opensAt !== null && value.closesAt !== null
+  )
+
+export const restaurantSettingsSchema = z.strictObject({
+  restaurantName: requiredText(MAX_NAME_LENGTH),
+  address: optionalText(MAX_DESCRIPTION_LENGTH),
+  phone: optionalText(MAX_PHONE_LENGTH),
+  timezone: requiredText(MAX_NAME_LENGTH),
 })
