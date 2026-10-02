@@ -847,16 +847,15 @@ set local request.jwt.claim.sub =
   'a2121212-1111-1111-1111-111111111111';
 
 -- T31
-with u as (
-  update public.products
-  set stock = stock - 1
-  where id = 'd2100011-0000-0000-0000-000000000011'
-  returning 1
-)
-select is(
-  (select count(*) from u),
-  0::bigint,
-  'T31 a non-admin direct product stock UPDATE affects 0 rows'
+select throws_ok(
+  $$
+    update public.products
+    set stock = stock - 1
+    where id = 'd2100011-0000-0000-0000-000000000011'
+  $$,
+  '42501',
+  null,
+  'T31 a non-admin direct product stock UPDATE is denied'
 );
 
 select * from finish();

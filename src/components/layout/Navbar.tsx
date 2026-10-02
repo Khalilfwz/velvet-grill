@@ -16,6 +16,22 @@ export default async function Navbar() {
 
   const claims = data?.claims
   const email = typeof claims?.email === 'string' ? claims.email : null
+  const userId = typeof claims?.sub === 'string' ? claims.sub : null
+
+  // Reuse the existing session/profile pattern: the role comes from the caller's
+  // own profile row, the same source the /admin guard reads. Guests and
+  // customers resolve to false, so only active admins see the entry.
+  let isAdmin = false
+
+  if (userId) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_active')
+      .eq('id', userId)
+      .maybeSingle()
+
+    isAdmin = profile?.role === 'ADMIN' && profile.is_active === true
+  }
 
   return (
     <header className="border-b border-border bg-surface">
@@ -60,6 +76,15 @@ export default async function Navbar() {
 
           {email ? (
             <div className="flex items-center gap-4">
+              {isAdmin && (
+                <Link
+                  href="/admin/products"
+                  className={`rounded-full border border-brand px-4 py-1.5 text-sm font-medium text-brand transition-colors hover:bg-brand hover:text-white ${focusClasses}`}
+                >
+                  Admin
+                </Link>
+              )}
+
               <span
                 className="max-w-[12rem] truncate text-sm text-zinc-600"
                 title={email}
@@ -118,6 +143,15 @@ export default async function Navbar() {
 
             {email ? (
               <>
+                {isAdmin && (
+                  <Link
+                    href="/admin/products"
+                    className={`block rounded-lg px-3 py-2 text-sm font-medium text-brand hover:bg-background ${focusClasses}`}
+                  >
+                    Admin panel
+                  </Link>
+                )}
+
                 <p className="truncate px-3 py-2 text-sm text-zinc-600" title={email}>
                   {email}
                 </p>

@@ -1145,6 +1145,73 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_product_image: {
+        Args: { p_id: string; p_product_id: string }
+        Returns: undefined
+      }
+      admin_save_category: {
+        Args: {
+          p_description: string
+          p_id: string
+          p_image_path: string
+          p_is_active: boolean
+          p_name: string
+          p_slug: string
+          p_sort_order: number
+        }
+        Returns: string
+      }
+      admin_save_option: {
+        Args: {
+          p_group_id: string
+          p_id: string
+          p_is_available: boolean
+          p_name: string
+          p_price_delta: number
+          p_product_id: string
+          p_sort_order: number
+        }
+        Returns: string
+      }
+      admin_save_option_group: {
+        Args: {
+          p_id: string
+          p_is_active: boolean
+          p_is_required: boolean
+          p_max_selections: number
+          p_min_selections: number
+          p_name: string
+          p_product_id: string
+          p_selection_type: Database["public"]["Enums"]["option_selection_type"]
+          p_sort_order: number
+        }
+        Returns: string
+      }
+      admin_save_product: {
+        Args: {
+          p_base_price: number
+          p_category_id: string
+          p_description: string
+          p_id: string
+          p_is_available: boolean
+          p_is_featured: boolean
+          p_name: string
+          p_slug: string
+          p_stock: number
+        }
+        Returns: string
+      }
+      admin_save_product_image: {
+        Args: {
+          p_alt_text: string
+          p_id: string
+          p_is_primary: boolean
+          p_product_id: string
+          p_sort_order: number
+          p_storage_path: string
+        }
+        Returns: string
+      }
       confirm_order_payment: {
         Args: { p_order_id: string }
         Returns: Database["public"]["Enums"]["payment_status"]

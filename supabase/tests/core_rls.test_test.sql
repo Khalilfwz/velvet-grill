@@ -243,17 +243,14 @@ select throws_ok(
 );
 
 -- Test 10: Customer cannot modify an existing product
-update public.products
-set name = 'Hacked Product'
-where id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
-
-select is(
-  (
-    select name
-    from public.products
+select throws_ok(
+  $$
+    update public.products
+    set name = 'Hacked Product'
     where id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
-  ),
-  'Wagyu Ribeye Steak',
+  $$,
+  '42501',
+  null,
   'Customer cannot modify products'
 );
 
@@ -272,14 +269,17 @@ select ok(
   'Admin helper returns true for active ADMIN'
 );
 
--- Test 12: Admin can modify product
-select lives_ok(
+-- Test 12: Direct catalog writes are revoked for authenticated callers; admin
+-- catalog writes go through the admin_* RPCs (see admin_catalog_test.sql).
+select throws_ok(
   $$
     update public.products
     set name = 'Wagyu Ribeye Steak - Admin'
     where id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
   $$,
-  'Admin can modify products'
+  '42501',
+  null,
+  'Admin direct product write is denied'
 );
 
 -- Test 13: Admin can modify restaurant settings

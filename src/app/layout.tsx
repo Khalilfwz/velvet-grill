@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
-import Navbar from '@/components/layout/Navbar'
 import './globals.css'
 
 const playfair = Playfair_Display({
@@ -29,10 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${playfair.variable} ${inter.variable}`}>
-      <body>
-	<Navbar />
-	{children}
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

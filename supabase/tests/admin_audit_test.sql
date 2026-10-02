@@ -299,11 +299,19 @@ set local request.jwt.claim.sub =
 -- TEST 5
 select lives_ok(
   $$
-    update public.products
-    set base_price = 275000
-    where id = 'bbbbbbbb-0000-4000-8000-000000000001'
+    select public.admin_save_product(
+      'bbbbbbbb-0000-4000-8000-000000000001',
+      'aaaaaaaa-0000-4000-8000-000000000001',
+      'Wagyu Ribeye Steak',
+      'wagyu-ribeye-fr25',
+      null,
+      275000,
+      10,
+      true,
+      false
+    )
   $$,
-  'Admin product update succeeds'
+  'Admin product update via RPC succeeds'
 );
 
 reset role;
@@ -354,12 +362,14 @@ select is(
 -- MORE ADMIN TABLES -> AUDIT (actions run as admin, verified as owner)
 -- ============================================================
 
--- TEST 9: categories INSERT
-insert into public.categories (id, name, slug, is_active)
-values (
-  'aaaaaaaa-0000-4000-8000-000000000002',
+-- TEST 9: categories INSERT (via authoritative RPC)
+select public.admin_save_category(
+  null,
   'Dessert',
   'dessert-fr25',
+  null,
+  null,
+  0,
   true
 );
 
@@ -383,9 +393,11 @@ set local role authenticated;
 set local request.jwt.claim.sub =
   '22222222-2222-2222-2222-222222222222';
 
--- TEST 10: product_images DELETE
-delete from public.product_images
-where id = 'c0000000-0000-4000-8000-000000000001';
+-- TEST 10: product_images DELETE (via authoritative RPC)
+select public.admin_delete_product_image(
+  'c0000000-0000-4000-8000-000000000001',
+  'bbbbbbbb-0000-4000-8000-000000000001'
+);
 
 reset role;
 
