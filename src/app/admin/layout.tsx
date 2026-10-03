@@ -39,6 +39,20 @@ export default async function AdminLayout({
           </Link>
 
           <Link
+            href="/admin/orders"
+            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
+          >
+            Orders
+          </Link>
+
+          <Link
+            href="/admin/reviews"
+            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
+          >
+            Reviews
+          </Link>
+
+          <Link
             href="/admin/tables"
             className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
           >

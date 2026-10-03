@@ -198,3 +198,23 @@ export const restaurantSettingsSchema = z.strictObject({
   phone: optionalText(MAX_PHONE_LENGTH),
   timezone: requiredText(MAX_NAME_LENGTH),
 })
+
+const orderStatus = z.enum([
+  'PENDING_PAYMENT',
+  'CONFIRMED',
+  'PREPARING',
+  'READY',
+  'COMPLETED',
+  'CANCELLED',
+])
+
+export const orderStatusUpdateSchema = z.strictObject({
+  orderId: z.string().regex(UUID_PATTERN),
+  toStatus: orderStatus,
+  note: optionalText(500),
+})
+
+export const reviewModerationSchema = z.strictObject({
+  reviewId: z.string().regex(UUID_PATTERN),
+  status: z.enum(['PUBLISHED', 'HIDDEN']),
+})

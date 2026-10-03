@@ -13,6 +13,8 @@ import {
   restaurantTableSchema,
   businessHoursSchema,
   restaurantSettingsSchema,
+  orderStatusUpdateSchema,
+  reviewModerationSchema,
   isUuid,
 } from '@/lib/admin/schemas'
 
@@ -28,6 +30,7 @@ const INVALID_RELATIONSHIP =
 const CONFLICT = 'A record with that slug or name already exists.'
 const CONFLICT_TABLE = 'A table with that number already exists.'
 const INVALID_INPUT = 'Please check the submitted values and try again.'
+const ORDER_STATUS_ERROR = 'That status change is not allowed for this order.'
 
 // Controlled SQLSTATEs raised by the admin_* RPCs plus the table constraints they
 // rely on. Anything else collapses to a generic message.
@@ -530,6 +533,95 @@ export async function saveRestaurantSettings(
   }
 
   revalidatePath('/admin/settings')
+
+  return { error: null }
+}
+
+export async function updateOrderStatus(
+  _previousState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const context = await getAdminContext()
+
+  if (!context) {
+    return { error: NOT_AUTHORIZED }
+  }
+
+  const parsed = orderStatusUpdateSchema.safeParse({
+    orderId: str(formData.get('orderId')),
+    toStatus: str(formData.get('toStatus')),
+    note: str(formData.get('note')),
+  })
+
+  if (!parsed.success) {
+    return { error: INVALID_INPUT }
+  }
+
+  // The RPC is the sole writer of order_status and re-validates the transition
+  // and payment gate. 42501 (not found/unauthorized) and 22023 (illegal
+  // transition or payment gate) both collapse to one non-revealing message.
+  let errorCode: string | undefined
+
+  try {
+    const { error } = await context.supabase.rpc('update_order_status', {
+      p_order_id: parsed.data.orderId,
+      p_to_status: parsed.data.toStatus,
+      p_note: parsed.data.note ?? undefined,
+    } as Database['public']['Functions']['update_order_status']['Args'])
+
+    if (error) {
+      errorCode = error.code
+    }
+  } catch {
+    return { error: GENERIC_ERROR }
+  }
+
+  if (errorCode) {
+    return {
+      error:
+        errorCode === '42501' || errorCode === '22023'
+          ? ORDER_STATUS_ERROR
+          : GENERIC_ERROR,
+    }
+  }
+
+  revalidatePath('/admin/orders')
+  revalidatePath(`/orders/${parsed.data.orderId}`)
+
+  return { error: null }
+}
+
+export async function moderateReview(
+  _previousState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const context = await getAdminContext()
+
+  if (!context) {
+    return { error: NOT_AUTHORIZED }
+  }
+
+  const parsed = reviewModerationSchema.safeParse({
+    reviewId: str(formData.get('reviewId')),
+    status: str(formData.get('status')),
+  })
+
+  if (!parsed.success) {
+    return { error: INVALID_INPUT }
+  }
+
+  const error = await runRpc(() =>
+    context.supabase.rpc('admin_moderate_review', {
+      p_review_id: parsed.data.reviewId,
+      p_status: parsed.data.status,
+    } as Database['public']['Functions']['admin_moderate_review']['Args'])
+  )
+
+  if (error) {
+    return { error }
+  }
+
+  revalidatePath('/admin/reviews')
 
   return { error: null }
 }

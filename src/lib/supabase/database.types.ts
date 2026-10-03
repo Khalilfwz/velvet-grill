@@ -1149,6 +1149,13 @@ export type Database = {
         Args: { p_id: string; p_product_id: string }
         Returns: undefined
       }
+      admin_moderate_review: {
+        Args: {
+          p_review_id: string
+          p_status: Database["public"]["Enums"]["review_status"]
+        }
+        Returns: Database["public"]["Enums"]["review_status"]
+      }
       admin_save_business_hours: {
         Args: {
           p_closes_at: string
