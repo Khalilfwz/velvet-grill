@@ -1156,6 +1156,27 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["review_status"]
       }
+      admin_operational_analytics: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          fulfillment_dine_in: number
+          fulfillment_pickup: number
+          gross_order_value: number
+          orders_cancelled: number
+          orders_completed: number
+          orders_confirmed: number
+          orders_pending_payment: number
+          orders_preparing: number
+          orders_ready: number
+          payments_expired: number
+          payments_failed: number
+          payments_paid: number
+          payments_pending: number
+          payments_refunded: number
+          payments_unpaid: number
+          total_orders: number
+        }[]
+      }
       admin_save_business_hours: {
         Args: {
           p_closes_at: string
