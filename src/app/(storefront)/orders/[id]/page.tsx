@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatIDR } from '@/lib/format-currency'
 import ConfirmPaymentButton from '@/components/orders/ConfirmPaymentButton'
+import ReviewForm from '@/components/reviews/ReviewForm'
 import { paymentMethodLabel, paymentStatusLabel } from '@/lib/orders/payment'
 
 const focusClasses =
@@ -32,15 +33,17 @@ export default async function OrderPage({
 
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
+  const userId =
+    typeof claimsData?.claims?.sub === 'string' ? claimsData.claims.sub : null
 
-  if (!claimsData?.claims) {
+  if (!userId) {
     redirect('/login')
   }
 
   const { data: order, error } = await supabase
     .from('orders')
     .select(
-      'id, order_number, order_status, payment_status, fulfillment_type, pickup_at, table_number_snapshot, customer_name_snapshot, customer_note, subtotal, discount_total, final_total, coupon_code_snapshot, created_at, payments(method, status, paid_at), order_items(id, product_name_snapshot, base_price_snapshot, final_unit_price, quantity, subtotal, order_item_options(id, option_group_name_snapshot, option_name_snapshot, price_delta_snapshot))'
+      'id, user_id, order_number, order_status, payment_status, fulfillment_type, pickup_at, table_number_snapshot, customer_name_snapshot, customer_note, subtotal, discount_total, final_total, coupon_code_snapshot, created_at, payments(method, status, paid_at), order_items(id, product_name_snapshot, base_price_snapshot, final_unit_price, quantity, subtotal, order_item_options(id, option_group_name_snapshot, option_name_snapshot, price_delta_snapshot))'
     )
     .eq('id', id)
     .maybeSingle()
@@ -62,6 +65,33 @@ export default async function OrderPage({
   }
 
   const items = order.order_items ?? []
+
+  // Review controls are for the order's owner only. `order.user_id` is read
+  // server-side solely for this check and is never displayed; broader admin read
+  // policies must not grant customer review controls on someone else's order.
+  const isOwner = order.user_id === userId
+
+  // The caller's own reviews for this order's items, so an already-reviewed item
+  // shows a summary instead of a second form. reviews_select_own scopes this.
+  const reviewedByItemId = new Map<string, { rating: number; status: string }>()
+
+  if (isOwner && items.length > 0) {
+    const { data: reviewRows } = await supabase
+      .from('reviews')
+      .select('order_item_id, rating, status')
+      .eq('user_id', userId)
+      .in(
+        'order_item_id',
+        items.map((item) => item.id)
+      )
+
+    for (const row of reviewRows ?? []) {
+      reviewedByItemId.set(row.order_item_id, {
+        rating: row.rating,
+        status: row.status,
+      })
+    }
+  }
 
   // FR-17 requires exactly one payment row per order. Historical/seeded orders
   // (created before FR-17) have none, so the method falls back to "—"; the
@@ -169,33 +199,49 @@ export default async function OrderPage({
           </h2>
 
           <ul className="mt-4 space-y-4">
-            {items.map((item) => (
-              <li key={item.id} className="text-sm">
-                <div className="flex justify-between gap-4">
-                  <span className="text-foreground">
-                    {item.product_name_snapshot}
-                    <span className="text-zinc-600"> × {item.quantity}</span>
-                  </span>
+            {items.map((item) => {
+              const review = reviewedByItemId.get(item.id)
 
-                  <span className="shrink-0 text-foreground">
-                    {formatIDR(item.subtotal)}
-                  </span>
-                </div>
+              return (
+                <li key={item.id} className="text-sm">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-foreground">
+                      {item.product_name_snapshot}
+                      <span className="text-zinc-600"> × {item.quantity}</span>
+                    </span>
 
-                {(item.order_item_options ?? []).length > 0 && (
-                  <ul className="mt-1 space-y-1 text-zinc-600">
-                    {(item.order_item_options ?? []).map((option) => (
-                      <li key={option.id}>
-                        {option.option_group_name_snapshot}:{' '}
-                        {option.option_name_snapshot}
-                        {option.price_delta_snapshot !== 0 &&
-                          ` (${formatIDR(option.price_delta_snapshot)})`}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
+                    <span className="shrink-0 text-foreground">
+                      {formatIDR(item.subtotal)}
+                    </span>
+                  </div>
+
+                  {(item.order_item_options ?? []).length > 0 && (
+                    <ul className="mt-1 space-y-1 text-zinc-600">
+                      {(item.order_item_options ?? []).map((option) => (
+                        <li key={option.id}>
+                          {option.option_group_name_snapshot}:{' '}
+                          {option.option_name_snapshot}
+                          {option.price_delta_snapshot !== 0 &&
+                            ` (${formatIDR(option.price_delta_snapshot)})`}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {isOwner && order.order_status === 'COMPLETED' && (
+                    review ? (
+                      <p className="mt-3 text-sm text-zinc-600">
+                        You rated this {review.rating}/5
+                        {review.status === 'HIDDEN' &&
+                          ' (hidden by moderation)'}
+                      </p>
+                    ) : (
+                      <ReviewForm orderItemId={item.id} />
+                    )
+                  )}
+                </li>
+              )
+            })}
           </ul>
 
           <dl className="mt-6 space-y-2 border-t border-border pt-4 text-sm">
@@ -230,10 +276,10 @@ export default async function OrderPage({
         </section>
 
         <Link
-          href="/menu"
+          href="/orders"
           className={`mt-8 inline-block rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light ${focusClasses}`}
         >
-          Back to menu
+          Back to My Orders
         </Link>
       </div>
     </main>

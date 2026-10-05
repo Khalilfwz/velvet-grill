@@ -13,6 +13,13 @@ import {
 import { buildProductOptionGroups } from '@/lib/catalog/product-options'
 import { formatIDR } from '@/lib/format-currency'
 
+function formatReviewDate(value: string): string {
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Jakarta',
+  }).format(new Date(value))
+}
+
 export default async function ProductPage({
   params,
 }: {
@@ -60,6 +67,22 @@ export default async function ProductPage({
       (group) => group.product_options ?? []
     )
   )
+
+  // Published reviews only. The explicit status filter keeps HIDDEN reviews out
+  // of the storefront for every viewer, including an admin browsing the menu.
+  const { data: reviewRows } = await supabase
+    .from('reviews')
+    .select('rating, title, content, created_at')
+    .eq('product_id', product.id)
+    .eq('status', 'PUBLISHED')
+    .order('created_at', { ascending: false })
+
+  const reviews = reviewRows ?? []
+  const reviewCount = reviews.length
+  const averageRating =
+    reviewCount > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+      : 0
 
   const { data: claimsData } = await supabase.auth.getClaims()
   const isAuthenticated = Boolean(claimsData?.claims)
@@ -147,6 +170,56 @@ export default async function ProductPage({
             ))}
           </div>
         )}
+
+        <section className="mt-12 border-t border-border pt-8">
+          <h2 className="font-display text-2xl font-semibold text-foreground">
+            Reviews
+          </h2>
+
+          {reviewCount === 0 ? (
+            <p className="mt-4 text-sm text-zinc-600">No reviews yet.</p>
+          ) : (
+            <>
+              <p className="mt-2 text-sm text-zinc-600">
+                {averageRating.toFixed(1)} out of 5 · {reviewCount}{' '}
+                {reviewCount === 1 ? 'review' : 'reviews'}
+              </p>
+
+              <ul className="mt-6 space-y-4">
+                {reviews.map((review, index) => (
+                  <li
+                    key={index}
+                    className="rounded-xl border border-border bg-surface p-6 shadow-sm"
+                  >
+                    <p
+                      className="font-medium text-brand"
+                      aria-label={`${review.rating} out of 5`}
+                    >
+                      {'★'.repeat(review.rating)}
+                      {'☆'.repeat(5 - review.rating)}
+                    </p>
+
+                    {review.title && (
+                      <p className="mt-2 font-display text-lg font-semibold text-foreground">
+                        {review.title}
+                      </p>
+                    )}
+
+                    {review.content && (
+                      <p className="mt-2 text-sm leading-6 text-zinc-600">
+                        {review.content}
+                      </p>
+                    )}
+
+                    <p className="mt-3 text-xs text-zinc-600">
+                      {formatReviewDate(review.created_at)} · Verified purchase
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
       </div>
     </main>
   )
