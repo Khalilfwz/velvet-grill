@@ -76,6 +76,15 @@ export default async function Navbar() {
 
           {email ? (
             <div className="flex items-center gap-4">
+              {!isAdmin && (
+                <Link
+                  href="/orders"
+                  className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
+                >
+                  My Orders
+                </Link>
+              )}
+
               {isAdmin && (
                 <Link
                   href="/admin/products"
@@ -143,6 +152,15 @@ export default async function Navbar() {
 
             {email ? (
               <>
+                {!isAdmin && (
+                  <Link
+                    href="/orders"
+                    className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
+                  >
+                    My Orders
+                  </Link>
+                )}
+
                 {isAdmin && (
                   <Link
                     href="/admin/products"
