@@ -328,6 +328,7 @@ select is(
       coalesce(max(before_data ->> 'base_price'), '') || '|' ||
       coalesce(max(after_data ->> 'base_price'), '')
     from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
   ),
   '1|PRODUCTS_UPDATE|products|bbbbbbbb-0000-4000-8000-000000000001|22222222-2222-2222-2222-222222222222|250000.00|275000.00',
   'Admin product update recorded once with actor and before/after'
@@ -353,9 +354,13 @@ set local request.jwt.claim.sub =
 
 -- TEST 8
 select is(
-  (select count(*) from public.admin_audit_logs),
+  (
+    select count(*)
+    from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
+  ),
   1::bigint,
-  'Admin can read audit logs'
+  'Admin can read the audit logs written by this suite'
 );
 
 -- ============================================================
@@ -384,6 +389,7 @@ select is(
           and entity_type = 'categories'
       )::text
     from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
   ),
   '2|1',
   'Admin category insert recorded'
@@ -410,6 +416,7 @@ select is(
           and entity_type = 'product_images'
       )::text
     from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
   ),
   '3|1',
   'Admin product image delete recorded'
@@ -436,6 +443,7 @@ select is(
           and entity_id is null
       )::text
     from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
   ),
   '4|1',
   'Admin settings update recorded with null entity_id'
@@ -472,6 +480,7 @@ select is(
           and entity_type = 'order_items'
       )::text
     from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
   ),
   '5|1',
   'Admin order item insert recorded'
@@ -497,6 +506,7 @@ select is(
           and entity_type = 'reviews'
       )::text
     from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
   ),
   '6|1',
   'Admin review content update recorded'
@@ -518,8 +528,12 @@ where id = 'a1000000-0000-4000-8000-000000000001';
 reset role;
 
 select is(
-  (select count(*) from public.admin_audit_logs),
-  6::bigint,
+  (
+    select count(*)
+    from public.admin_audit_logs
+    where actor_user_id = '11111111-1111-1111-1111-111111111111'
+  ),
+  0::bigint,
   'Customer own-review update is not audited'
 );
 
@@ -544,10 +558,14 @@ select is(
       (select payment_status::text
        from public.orders
        where id = '90909090-0000-4000-8000-000000000002') || '|' ||
-      (select count(*) from public.admin_audit_logs)::text
+      (select count(*) from public.admin_audit_logs
+       where actor_user_id = '11111111-1111-1111-1111-111111111111')::text || '|' ||
+      (select count(*) from public.admin_audit_logs
+       where actor_user_id = '11111111-1111-1111-1111-111111111111'
+         and action = 'PAYMENTS_UPDATE')::text
   ),
-  'PAID|6',
-  'Customer digital payment confirmation is not audited'
+  'PAID|0|0',
+  'Customer digital payment confirmation updates payments but is not audited'
 );
 
 -- TEST 16: owner-context write with no admin identity
@@ -559,8 +577,14 @@ set stock = 7
 where id = 'bbbbbbbb-0000-4000-8000-000000000001';
 
 select is(
-  (select count(*) from public.admin_audit_logs),
-  6::bigint,
+  (
+    select count(*)
+    from public.admin_audit_logs
+    where entity_type = 'products'
+      and entity_id = 'bbbbbbbb-0000-4000-8000-000000000001'
+      and after_data ->> 'stock' = '7'
+  ),
+  0::bigint,
   'Owner-context write is not audited'
 );
 
@@ -589,8 +613,14 @@ reset role;
 
 -- TEST 18
 select is(
-  (select count(*) from public.admin_audit_logs),
-  6::bigint,
+  (
+    select count(*)
+    from public.admin_audit_logs
+    where entity_type = 'orders'
+      and entity_id = '90909090-0000-4000-8000-000000000001'
+      and after_data ->> 'order_status' = 'READY'
+  ),
+  0::bigint,
   'Rejected order status transition wrote no audit row'
 );
 
@@ -616,10 +646,13 @@ reset role;
 select is(
   (
     select
-      count(*)::text || '|' ||
+      count(*) filter (
+        where actor_user_id = '22222222-2222-2222-2222-222222222222'
+      )::text || '|' ||
       count(*) filter (
         where entity_type = 'orders'
           and action = 'ORDERS_UPDATE'
+          and entity_id = '90909090-0000-4000-8000-000000000001'
           and after_data ->> 'order_status' = 'CONFIRMED'
       )::text
     from public.admin_audit_logs
@@ -645,7 +678,11 @@ $do$;
 reset role;
 
 select is(
-  (select count(*) from public.admin_audit_logs),
+  (
+    select count(*)
+    from public.admin_audit_logs
+    where actor_user_id = '22222222-2222-2222-2222-222222222222'
+  ),
   7::bigint,
   'Same-status replay wrote no duplicate audit row'
 );
@@ -679,16 +716,25 @@ reset role;
 select is(
   (
     select
-      count(*)::text || '|' ||
+      count(*) filter (
+        where actor_user_id = '22222222-2222-2222-2222-222222222222'
+      )::text || '|' ||
       count(*) filter (
         where entity_type = 'orders'
           and action = 'ORDERS_UPDATE'
+          and entity_id = '90909090-0000-4000-8000-000000000001'
           and after_data ->> 'payment_status' = 'PAID'
+      )::text || '|' ||
+      count(*) filter (
+        where entity_type = 'payments'
+          and action = 'PAYMENTS_UPDATE'
+          and entity_id = '93939393-0000-4000-8000-000000000001'
+          and after_data ->> 'status' = 'PAID'
       )::text
     from public.admin_audit_logs
   ),
-  '8|1',
-  'Payment confirmation recorded once; replay wrote no duplicate'
+  '9|1|1',
+  'Payment confirmation recorded the orders and payments rows once; replay wrote no duplicate'
 );
 
 -- ============================================================
@@ -714,8 +760,8 @@ select is(
         and t.tgname like 'fr25_audit_%'
     ) s
   ),
-  '12|fr25_audit_business_hours:business_hours,fr25_audit_categories:categories,fr25_audit_order_item_options:order_item_options,fr25_audit_order_items:order_items,fr25_audit_orders:orders,fr25_audit_product_images:product_images,fr25_audit_product_option_groups:product_option_groups,fr25_audit_product_options:product_options,fr25_audit_products:products,fr25_audit_restaurant_settings:restaurant_settings,fr25_audit_restaurant_tables:restaurant_tables,fr25_audit_reviews:reviews',
-  'Exactly the 12 expected FR-25 audit triggers are attached to their tables'
+  '13|fr25_audit_business_hours:business_hours,fr25_audit_categories:categories,fr25_audit_order_item_options:order_item_options,fr25_audit_order_items:order_items,fr25_audit_orders:orders,fr25_audit_payments:payments,fr25_audit_product_images:product_images,fr25_audit_product_option_groups:product_option_groups,fr25_audit_product_options:product_options,fr25_audit_products:products,fr25_audit_restaurant_settings:restaurant_settings,fr25_audit_restaurant_tables:restaurant_tables,fr25_audit_reviews:reviews',
+  'Exactly the 13 expected FR-25 audit triggers are attached to their tables'
 );
 
 select * from finish();

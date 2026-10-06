@@ -80,6 +80,13 @@ export default async function AdminLayout({
             Analytics
           </Link>
 
+          <Link
+            href="/admin/audit"
+            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
+          >
+            Audit
+          </Link>
+
           <div className="ml-auto flex items-center gap-4">
             <Link
               href="/menu"
