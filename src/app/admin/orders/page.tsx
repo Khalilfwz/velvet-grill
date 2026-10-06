@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { requireAdminPage } from '@/lib/admin/guard'
 import OrderStatusForm from '@/components/admin/OrderStatusForm'
-import { nextOrderStatuses, type OrderStatus } from '@/lib/orders/order-status'
+import { nextOrderStatusesForOrder, type OrderStatus } from '@/lib/orders/order-status'
 import { formatIDR } from '@/lib/format-currency'
 
 export const metadata = {
@@ -157,8 +157,9 @@ export default async function AdminOrdersPage({
                       <OrderStatusForm
                         orderId={order.id}
                         currentStatus={order.order_status}
-                        allowedTransitions={nextOrderStatuses(
-                          order.order_status
+                        allowedTransitions={nextOrderStatusesForOrder(
+                          order.order_status,
+                          order.payment_status
                         )}
                       />
                     </td>

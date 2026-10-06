@@ -89,6 +89,7 @@ The server/database must derive or verify authoritative values.
 - Never accept order or payment state changes directly from the browser.
 - Digital payment orders must satisfy the required payment condition before entering `PREPARING`.
 - Cash orders may remain `UNPAID` while in `PREPARING` and become `PAID` when payment is confirmed at fulfillment.
+- An order must not enter `COMPLETED` unless `orders.payment_status = PAID` (universal across payment methods).
 - Use idempotency for retry-sensitive operations such as order creation, payment transitions, coupon usage, and stock mutation.
 - Use an atomic database transaction for stock mutation and order creation when both operations must succeed together.
 - Prefer a conditional atomic update or RPC/database function over a select-then-update stock pattern.

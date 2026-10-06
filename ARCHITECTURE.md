@@ -155,7 +155,7 @@ PENDING_PAYMENT
 | `PENDING_PAYMENT` | `CONFIRMED` | Order is valid and required payment/fulfillment conditions are satisfied |
 | `CONFIRMED`       | `PREPARING` | Order is accepted and eligible for preparation                           |
 | `PREPARING`       | `READY`     | Preparation is complete                                                  |
-| `READY`           | `COMPLETED` | Order has been fulfilled or handed over                                  |
+| `READY`           | `COMPLETED` | Order is fulfilled/handed over and `payment_status = PAID`                |
 | `PENDING_PAYMENT` | `CANCELLED` | Order is cancelled before confirmation                                   |
 | `CONFIRMED`       | `CANCELLED` | Cancellation is still permitted by business rules                        |
 
@@ -164,7 +164,7 @@ PENDING_PAYMENT
 - `PENDING_PAYMENT → CONFIRMED` only after order acceptance and a valid payment/fulfillment policy.
 - `CONFIRMED → PREPARING` only when the order is eligible to enter preparation.
 - `PREPARING → READY` only after preparation is complete.
-- `READY → COMPLETED` after fulfillment/handover.
+- `READY → COMPLETED` only after fulfillment/handover and only when `payment_status = PAID`.
 - A cancellation path must be explicitly defined per cancellable state before implementation.
 
 ### Cash policy
@@ -176,6 +176,7 @@ For cash orders:
 - The order may enter PREPARING while payment remains UNPAID.
 - Cash payment must be recorded as PAID when payment is confirmed at fulfillment.
 - The order may enter COMPLETED only after the fulfillment process is completed.
+- Before `READY → COMPLETED`, an admin must confirm payment through the separate payment-confirmation action so `payment_status` becomes `PAID`.
 
 For digital payment methods:
 
@@ -222,9 +223,12 @@ Payment transitions must be validated server-side and must not be accepted from 
 
 ### Payment Method Rules
 
+- An order must not enter `COMPLETED` unless `payment_status = PAID`. This invariant is universal across payment methods.
+- `PAID` does not itself advance `order_status`; payment confirmation (`confirm_order_payment`) and order completion (`update_order_status`) are separate admin actions, and completion never confirms payment.
+
 Digital payment methods:
 - Payment must progress through the payment lifecycle.
-- `PAID` is required before the order enters any state that requires completed payment.
+- `PAID` is required before a digital-payment order enters `PREPARING`.
 
 Cash:
 - Payment may remain `UNPAID` while the order is being prepared.
