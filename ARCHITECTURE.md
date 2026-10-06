@@ -372,3 +372,16 @@ Use the smallest relevant layer for the change. Do not run a full E2E suite for 
 6. Analytics do not replace transactional truth.
 7. AI-generated code remains human-reviewable.
 8. Interactive UI never overrides security or data integrity.
+
+## 18. Notifications
+
+Notifications are persistent, in-app customer records in `public.notifications`. They are not email, SMS, push, or realtime.
+
+- Recipients: customers only. Admin notifications are out of scope.
+- Events (locked): ORDER `CONFIRMED`, `READY`, `COMPLETED`, `CANCELLED`; PAYMENT `PAID`.
+- Creation is server-authoritative and atomic with the business event: `public.update_order_status` writes the ORDER notifications and `public.confirm_order_payment` writes the PAYMENT notification, in the same transaction as the state change. `create_order` does not notify.
+- The recipient is derived from `orders.user_id`, never from the browser. An order with no owner produces no notification.
+- Notifications are created only on genuine transitions; the existing replay guards in both RPCs prevent duplicates on retry.
+- Delivery surface: in-app only, at `/notifications`, with an unread indicator in the navigation. A notification's `order_id` links to the related order.
+- Read state: `is_read`, toggled per notification by its owner. Clients have no INSERT or DELETE; they may update only `is_read`, and only for their own rows (RLS plus a column-level grant).
+- Retention: kept indefinitely for the current scope.

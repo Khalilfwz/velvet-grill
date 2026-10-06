@@ -96,6 +96,12 @@ The server/database must derive or verify authoritative values.
 - Treat `SELECT ... FOR UPDATE` as a tool when required, not as a mandatory pattern.
 - A failed stock mutation must not leave a partially created order.
 
+### Notifications (in-app)
+
+- Notification creation is server-authoritative and atomic with the business event; clients have no INSERT or DELETE on `public.notifications`.
+- The recipient is derived server-side from `orders.user_id`, never from browser input.
+- Customers may read, and toggle `is_read` on, only their own notifications. RLS plus a column-level `UPDATE (is_read)` grant enforce this; no other notification column is client-writable.
+
 ## 8. Dine-In Table Security
 
 `table_id` from a URL, QR code, hidden form field, or browser state is untrusted.

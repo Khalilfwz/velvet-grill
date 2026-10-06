@@ -127,7 +127,7 @@ There is intentionally no Manager role.
 ### Reviews, Notifications, Analytics, Audit
 
 - FR-22: Allow reviews only for eligible completed purchases.
-- FR-23: Allow customers to view/manage their own notifications.
+- FR-23: Allow customers to view/manage their own in-app notifications for order-status events (CONFIRMED, READY, COMPLETED, CANCELLED) and payment events (PAID).
 - FR-24: Keep analytics separate from transactional revenue truth.
 - FR-25: Record sensitive admin actions in audit logs.
 
