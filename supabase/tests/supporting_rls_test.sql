@@ -16,7 +16,7 @@ values
   ),
   (
     '22222222-2222-2222-2222-222222222222',
-    'admin@test.local'
+    'supporting-admin@test.local'
   ),
   (
     '33333333-3333-3333-3333-333333333333',
@@ -323,11 +323,15 @@ set local role anon;
 -- TEST 2
 select is(
   (
-    select count(*)
+    select coalesce(string_agg(id::text, ',' order by id), '')
     from public.reviews
+    where id in (
+      'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      'bbbbbbbb-cccc-dddd-eeee-ffffffffffff'
+    )
   ),
-  1::bigint,
-  'Anonymous users see only published reviews'
+  'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+  'Anonymous users see only the published fixture review'
 );
 
 -- TEST 3
@@ -396,10 +400,11 @@ select is(
   (
     select count(*)
     from public.reviews
-    where status = 'PUBLISHED'
+    where id = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+      and status = 'PUBLISHED'
   ),
   1::bigint,
-  'Customer can read published reviews'
+  'Customer can read the published fixture review'
 );
 
 -- TEST 7
@@ -623,10 +628,11 @@ select is(
   (
     select count(*)
     from public.reviews
-    where status = 'HIDDEN'
+    where id = 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff'
+      and status = 'HIDDEN'
   ),
   1::bigint,
-  'Admin can read hidden reviews for moderation'
+  'Admin can read the hidden fixture review for moderation'
 );
 
 -- TEST 21
@@ -646,9 +652,10 @@ select is(
   (
     select count(*)
     from public.admin_audit_logs
+    where id = '30303030-3030-3030-3030-303030303030'
   ),
   1::bigint,
-  'Admin can read audit logs'
+  'Admin can read the fixture audit log'
 );
 
 -- TEST 23

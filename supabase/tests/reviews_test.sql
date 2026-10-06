@@ -548,9 +548,20 @@ select is(
   (
     select count(*)
     from public.reviews
+    where (
+      id in (
+        'f0000000-0000-4000-8000-000000000001',
+        'f0000000-0000-4000-8000-000000000002'
+      )
+      or order_item_id in (
+        'e0000000-0000-4000-8000-000000000001',
+        'e0000000-0000-4000-8000-000000000002',
+        'e0000000-0000-4000-8000-000000000007'
+      )
+    )
   ),
   2::bigint,
-  'Anonymous users see only published reviews'
+  'Anonymous users see only the published fixture reviews'
 );
 
 -- ============================================================

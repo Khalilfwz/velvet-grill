@@ -504,6 +504,7 @@ select is(
       || '|' || count(*) filter (where action = 'PRODUCT_OPTIONS_INSERT')::text
       || '|' || count(*) filter (where action = 'PRODUCT_OPTIONS_UPDATE')::text
     from public.admin_audit_logs
+    where actor_user_id = 'a2600000-0000-4000-8000-000000000001'
   ),
   '11|1|1|1|1|1|1|1|1|1|1|1',
   'Each successful admin RPC write is audited exactly once; rejected writes none'
