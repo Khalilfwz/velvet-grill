@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Bell, Heart, ShoppingCart } from 'lucide-react'
+import { Bell, Heart, ShoppingCart, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/auth/actions'
 
@@ -120,6 +120,16 @@ export default async function Navbar() {
                 </Link>
               )}
 
+              {!isAdmin && (
+                <Link
+                  href="/profile"
+                  aria-label="Profile"
+                  className={`transition-colors hover:text-brand ${focusClasses}`}
+                >
+                  <User size={20} />
+                </Link>
+              )}
+
               {isAdmin && (
                 <Link
                   href="/admin/products"
@@ -204,6 +214,15 @@ export default async function Navbar() {
                     {unreadCount > 0
                       ? `Notifications (${unreadCount})`
                       : 'Notifications'}
+                  </Link>
+                )}
+
+                {!isAdmin && (
+                  <Link
+                    href="/profile"
+                    className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
+                  >
+                    Profile
                   </Link>
                 )}
 
