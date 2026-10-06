@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <body
+    style="
+      margin: 0;
+      padding: 24px;
+      background: #f5f1e8;
+      color: #171717;
+      font-family: Inter, Arial, sans-serif;
+    "
+  >
+    <h2 style="margin: 0 0 12px; color: #5a1e2b">Confirm your email</h2>
+
+    <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5">
+      Follow this link to confirm your email address and finish creating your
+      Velvet Grill account.
+    </p>
+
+    <p style="margin: 0 0 16px">
+      <a
+        href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup"
+        style="
+          display: inline-block;
+          padding: 10px 20px;
+          border-radius: 9999px;
+          background: #5a1e2b;
+          color: #ffffff;
+          font-size: 14px;
+          text-decoration: none;
+        "
+        >Confirm email</a
+      >
+    </p>
+
+    <p style="margin: 0; font-size: 13px; color: #52525b">
+      If you did not create an account, you can safely ignore this email.
+    </p>
+  </body>
+</html>

@@ -10,9 +10,6 @@ const labelClasses = 'block text-sm font-medium text-foreground'
 
 const inputClasses = `mt-1 w-full rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground ${focusClasses}`
 
-const readOnlyInputClasses =
-  'mt-1 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-zinc-600'
-
 const ERROR_ID = 'profile-error'
 
 const initialState: ProfileActionState = { error: null, success: false }
@@ -20,10 +17,14 @@ const initialState: ProfileActionState = { error: null, success: false }
 type ProfileFormProps = {
   fullName: string | null
   phone: string | null
-  email: string | null
+  isCustomer: boolean
 }
 
-export default function ProfileForm({ fullName, phone, email }: ProfileFormProps) {
+export default function ProfileForm({
+  fullName,
+  phone,
+  isCustomer,
+}: ProfileFormProps) {
   const [state, formAction, isPending] = useActionState(
     updateProfile,
     initialState
@@ -31,22 +32,6 @@ export default function ProfileForm({ fullName, phone, email }: ProfileFormProps
 
   return (
     <form action={formAction} className="space-y-5">
-      <div>
-        <label htmlFor="email" className={labelClasses}>
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email ?? ''}
-          readOnly
-          className={readOnlyInputClasses}
-        />
-        <p className="mt-1 text-sm text-zinc-600">
-          Email is managed by your sign-in and can&apos;t be changed here.
-        </p>
-      </div>
-
       <div>
         <label htmlFor="fullName" className={labelClasses}>
           Full name
@@ -64,22 +49,24 @@ export default function ProfileForm({ fullName, phone, email }: ProfileFormProps
         />
       </div>
 
-      <div>
-        <label htmlFor="phone" className={labelClasses}>
-          Phone
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          type="tel"
-          autoComplete="tel"
-          maxLength={32}
-          defaultValue={phone ?? ''}
-          aria-invalid={state.error ? true : undefined}
-          aria-describedby={state.error ? ERROR_ID : undefined}
-          className={inputClasses}
-        />
-      </div>
+      {isCustomer && (
+        <div>
+          <label htmlFor="phone" className={labelClasses}>
+            Phone
+          </label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            maxLength={32}
+            defaultValue={phone ?? ''}
+            aria-invalid={state.error ? true : undefined}
+            aria-describedby={state.error ? ERROR_ID : undefined}
+            className={inputClasses}
+          />
+        </div>
+      )}
 
       {state.error && (
         <p id={ERROR_ID} role="alert" className="text-sm text-red-600">

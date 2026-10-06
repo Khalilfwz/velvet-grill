@@ -47,16 +47,34 @@ export async function updateProfile(
     redirect('/login')
   }
 
+  // Role is derived server-side, never from the browser. CUSTOMER may edit
+  // full_name and phone; ADMIN edits full_name only, so a hidden phone field
+  // can never clear or mutate an admin's phone.
+  const { data: current, error: currentError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (currentError || !current) {
+    return { error: GENERIC_ERROR, success: false }
+  }
+
+  const payload: { full_name: string | null; phone?: string | null } = {
+    full_name: parsed.data.fullName,
+  }
+
+  if (current.role === 'CUSTOMER') {
+    payload.phone = parsed.data.phone
+  }
+
   try {
     // A profiles row is a required 1:1 record. Returning the updated id proves
     // the caller's row existed and was updated; zero rows returned (missing or
     // non-writable row) is not success.
     const { data: updated, error } = await supabase
       .from('profiles')
-      .update({
-        full_name: parsed.data.fullName,
-        phone: parsed.data.phone,
-      })
+      .update(payload)
       .eq('id', userId)
       .select('id')
       .maybeSingle()

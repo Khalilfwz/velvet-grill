@@ -2,7 +2,13 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AuthForm from '@/components/auth/AuthForm'
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const params = await searchParams
+
   const supabase = await createClient()
   const { data } = await supabase.auth.getClaims()
 
@@ -24,6 +30,16 @@ export default async function LoginPage() {
         <p className="mt-2 text-sm leading-6 text-zinc-600">
           Sign in to manage your account, wishlist, and orders.
         </p>
+
+        {params.error === 'confirmation' && (
+          <p
+            role="alert"
+            className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          >
+            That confirmation link is invalid or has expired. Sign in, or
+            register again to get a new link.
+          </p>
+        )}
 
         <div className="mt-8 rounded-xl border border-border bg-surface p-6 shadow-sm">
           <AuthForm mode="login" />

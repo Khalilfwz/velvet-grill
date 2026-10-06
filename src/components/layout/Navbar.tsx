@@ -120,15 +120,13 @@ export default async function Navbar() {
                 </Link>
               )}
 
-              {!isAdmin && (
-                <Link
-                  href="/profile"
-                  aria-label="Profile"
-                  className={`transition-colors hover:text-brand ${focusClasses}`}
-                >
-                  <User size={20} />
-                </Link>
-              )}
+              <Link
+                href="/profile"
+                aria-label="Profile"
+                className={`transition-colors hover:text-brand ${focusClasses}`}
+              >
+                <User size={20} />
+              </Link>
 
               {isAdmin && (
                 <Link
@@ -217,14 +215,12 @@ export default async function Navbar() {
                   </Link>
                 )}
 
-                {!isAdmin && (
-                  <Link
-                    href="/profile"
-                    className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
-                  >
-                    Profile
-                  </Link>
-                )}
+                <Link
+                  href="/profile"
+                  className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
+                >
+                  Profile
+                </Link>
 
                 {isAdmin && (
                   <Link
