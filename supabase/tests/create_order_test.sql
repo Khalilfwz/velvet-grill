@@ -164,7 +164,7 @@ values (
 select is(
   has_function_privilege(
     'anon',
-    'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text,public.payment_method,text)',
+    'public.create_order(public.order_fulfillment_type,text,text,text,text,uuid,text,public.payment_method,text)',
     'EXECUTE'
   ),
   false,
@@ -175,7 +175,7 @@ select is(
 select is(
   has_function_privilege(
     'authenticated',
-    'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text,public.payment_method,text)',
+    'public.create_order(public.order_fulfillment_type,text,text,text,text,uuid,text,public.payment_method,text)',
     'EXECUTE'
   ),
   true,
@@ -195,7 +195,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours', null, '', 'CASH'
+      '2026-01-05T12:00', null, '', 'CASH'
     )
   $$,
   '22023',
@@ -221,7 +221,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours',
+      '2026-01-05T12:00',
       '71313131-1111-1111-1111-111111111111',
       'fr13-key-pickup-with-table', 'CASH'
     )
@@ -236,7 +236,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', repeat('x', 130), null, null,
-      now() + interval '2 hours', null, 'fr13-key-long-name', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-key-long-name', 'CASH'
     )
   $$,
   '22023',
@@ -286,7 +286,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Grace Hopper', null, null,
-      now() + interval '2 hours', null, 'fr13-key-no-cart', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-key-no-cart', 'CASH'
     )
   $$,
   '22023',
@@ -316,7 +316,7 @@ select lives_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', '+620000000000', null,
-      now() + interval '2 hours', null, 'fr13-pickup-key', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-pickup-key', 'CASH'
     )
   $$,
   'Pickup order creation succeeds'
@@ -498,7 +498,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'Ada Lovelace', '+620000000000', null,
-      now() + interval '2 hours', null, 'fr13-pickup-key', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-pickup-key', 'CASH'
     )::text
   ),
   true
@@ -528,7 +528,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours', null, 'fr13-other-key', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-other-key', 'CASH'
     )
   $$,
   '22023',
@@ -683,7 +683,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours', null, 'fr13-inv-product', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-inv-product', 'CASH'
     )
   $$,
   '22023',
@@ -727,7 +727,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours', null, 'fr13-inv-option', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-inv-option', 'CASH'
     )
   $$,
   '22023',
@@ -761,7 +761,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours', null, 'fr13-required-group', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-required-group', 'CASH'
     )
   $$,
   '22023',
@@ -802,7 +802,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours', null, 'fr13-single-two', 'CASH'
+      '2026-01-05T12:00', null, 'fr13-single-two', 'CASH'
     )
   $$,
   '22023',

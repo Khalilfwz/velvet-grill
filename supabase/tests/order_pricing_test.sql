@@ -140,7 +140,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'Ada Lovelace', null, null,
-      now() + interval '2 hours', null, 'fr14-pricing-key', 'CASH'
+      '2026-01-05T12:00', null, 'fr14-pricing-key', 'CASH'
     )::text
   ),
   true
@@ -236,7 +236,7 @@ select is(
     from pg_proc p
     cross join lateral unnest(p.proargnames) as arg_name
     where p.oid =
-      'public.create_order(public.order_fulfillment_type,text,text,text,timestamptz,uuid,text,public.payment_method,text)'::regprocedure
+      'public.create_order(public.order_fulfillment_type,text,text,text,text,uuid,text,public.payment_method,text)'::regprocedure
       and arg_name ilike any (
         array['%price%', '%subtotal%', '%total%', '%discount%', '%amount%']
       )

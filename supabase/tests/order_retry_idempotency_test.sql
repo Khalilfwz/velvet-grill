@@ -132,7 +132,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr19-failed', 'CASH'
+      '2026-01-05T12:00', null, 'fr19-failed', 'CASH'
     )
   $$,
   '22023',
@@ -178,7 +178,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr19-failed', 'CASH'
+      '2026-01-05T12:00', null, 'fr19-failed', 'CASH'
     )::text
   ),
   true
@@ -237,7 +237,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr19-a', 'CASH', 'FR19'
+      '2026-01-05T12:00', null, 'fr19-a', 'CASH', 'FR19'
     )::text
   ),
   true
@@ -255,7 +255,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr19-a', 'CASH', 'FR19'
+      '2026-01-05T12:00', null, 'fr19-a', 'CASH', 'FR19'
     )::text
   ),
   true
@@ -367,7 +367,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', '+620000000001', 'different note',
-      now() + interval '3 hours', null, 'fr19-a', 'DUMMY_QRIS', null
+      '2026-01-05T12:00', null, 'fr19-a', 'DUMMY_QRIS', null
     )::text
   ),
   true
@@ -426,7 +426,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer B', null, null,
-      now() + interval '2 hours', null, 'fr19-a', 'CASH'
+      '2026-01-05T12:00', null, 'fr19-a', 'CASH'
     )::text
   ),
   true
@@ -493,7 +493,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr19-digital', 'DUMMY_QRIS'
+      '2026-01-05T12:00', null, 'fr19-digital', 'DUMMY_QRIS'
     )::text
   ),
   true
@@ -642,7 +642,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr19-cash', 'CASH'
+      '2026-01-05T12:00', null, 'fr19-cash', 'CASH'
     )::text
   ),
   true
@@ -857,7 +857,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-19 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr19-gate', 'DUMMY_QRIS'
+      '2026-01-05T12:00', null, 'fr19-gate', 'DUMMY_QRIS'
     )::text
   ),
   true

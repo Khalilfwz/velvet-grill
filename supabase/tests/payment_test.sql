@@ -144,7 +144,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-17 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr17-null-method',
+      '2026-01-05T12:00', null, 'fr17-null-method',
       null::public.payment_method
     )
   $$,
@@ -162,7 +162,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-17 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr17-cash', 'CASH'
+      '2026-01-05T12:00', null, 'fr17-cash', 'CASH'
     )::text
   ),
   true
@@ -224,7 +224,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-17 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr17-qris', 'DUMMY_QRIS'
+      '2026-01-05T12:00', null, 'fr17-qris', 'DUMMY_QRIS'
     )::text
   ),
   true
@@ -286,7 +286,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-17 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr17-bank', 'DUMMY_BANK_TRANSFER'
+      '2026-01-05T12:00', null, 'fr17-bank', 'DUMMY_BANK_TRANSFER'
     )::text
   ),
   true
@@ -349,7 +349,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-17 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr17-qris', 'DUMMY_QRIS'
+      '2026-01-05T12:00', null, 'fr17-qris', 'DUMMY_QRIS'
     )::text
   ),
   true
@@ -608,7 +608,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-17 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr17-cross', 'DUMMY_QRIS'
+      '2026-01-05T12:00', null, 'fr17-cross', 'DUMMY_QRIS'
     )::text
   ),
   true

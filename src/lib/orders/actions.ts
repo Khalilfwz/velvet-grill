@@ -23,6 +23,12 @@ const INVALID_SELECTION_ERROR =
 const TABLE_ERROR = 'The selected table is not available.'
 const DETAILS_ERROR = 'Please check your order details and try again.'
 
+// The database raises one controlled error for every pickup-scheduling
+// rejection (outside business hours, closed day, missing hours row, missing or
+// invalid restaurant timezone). The UI must not distinguish them.
+const PICKUP_HOURS_ERROR =
+  'That pickup time is not available. Please choose a time during opening hours.'
+
 // Single, non-revealing coupon message. The database raises one unified error
 // for every coupon-unavailable condition (unknown, inactive, out of window,
 // minimum not met, usage limits), so the UI must not distinguish them either.
@@ -43,7 +49,9 @@ type CreateOrderArgs = Database['public']['Functions']['create_order']['Args']
 // four are intentionally NULL for the fulfillment type they do not apply to.
 // Widening is limited to those keys; identity, name, the idempotency key and
 // the (untrusted) coupon code stay non-nullable — an empty coupon string is
-// normalised to "no coupon" by create_order.
+// normalised to "no coupon" by create_order. p_pickup_at is a restaurant-local
+// wall-clock string (YYYY-MM-DDTHH:mm), not a resolved instant; create_order
+// interprets it in the authoritative restaurant timezone.
 type CreateOrderPayload = Omit<
   CreateOrderArgs,
   | 'p_customer_phone'
@@ -77,6 +85,8 @@ function mapRpcError(message: string): string {
       return COUPON_ERROR
     case 'Payment method is invalid':
       return DETAILS_ERROR
+    case 'Pickup time is outside business hours':
+      return PICKUP_HOURS_ERROR
     case 'Order key is invalid':
     case 'Customer name is invalid':
     case 'Customer phone is invalid':
@@ -132,13 +142,16 @@ export async function placeOrder(
   let tableId: string | null = null
 
   if (fulfillmentType === 'PICKUP') {
-    const parsed = new Date(pickupAtRaw)
-
-    if (!pickupAtRaw || Number.isNaN(parsed.getTime())) {
+    // The browser value is a restaurant-local wall-clock candidate, not an
+    // instant. It is forwarded verbatim; create_order interprets it in the
+    // authoritative restaurant timezone and enforces business hours. Only a
+    // presence check lives here — the database re-validates shape and hours
+    // independently and remains the sole scheduling authority.
+    if (pickupAtRaw === '') {
       return { error: DETAILS_ERROR }
     }
 
-    pickupAt = parsed.toISOString()
+    pickupAt = pickupAtRaw
   } else {
     if (!UUID_PATTERN.test(tableIdRaw)) {
       return { error: DETAILS_ERROR }

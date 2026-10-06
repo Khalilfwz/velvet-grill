@@ -221,7 +221,7 @@ select lives_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-success', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-success', 'CASH'
     )
   $$,
   'T4 sufficient-stock create_order succeeds'
@@ -312,7 +312,7 @@ select lives_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-exact', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-exact', 'CASH'
     )
   $$,
   'T10 an order for the exact remaining stock succeeds'
@@ -352,7 +352,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-zero', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-zero', 'CASH'
     )
   $$,
   '22023',
@@ -388,7 +388,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-fail', 'CASH', 'FR21'
+      '2026-01-05T12:00', null, 'fr21-fail', 'CASH', 'FR21'
     )
   $$,
   '22023',
@@ -511,7 +511,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-unavail', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-unavail', 'CASH'
     )
   $$,
   '22023',
@@ -584,7 +584,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-replay', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-replay', 'CASH'
     )::text
   ),
   true
@@ -595,7 +595,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-replay', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-replay', 'CASH'
     )::text
   ),
   true
@@ -639,7 +639,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-21 Customer', '+620000000009', 'different note',
-      now() + interval '3 hours', null, 'fr21-replay', 'DUMMY_QRIS'
+      '2026-01-05T12:00', null, 'fr21-replay', 'DUMMY_QRIS'
     )::text
   ),
   true
@@ -691,7 +691,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-multi', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-multi', 'CASH'
     )::text
   ),
   true
@@ -756,7 +756,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-21 Customer', null, null,
-      now() + interval '2 hours', null, 'fr21-dup', 'CASH'
+      '2026-01-05T12:00', null, 'fr21-dup', 'CASH'
     )::text
   ),
   true
@@ -808,7 +808,7 @@ do $$
 begin
   perform public.create_order(
     'PICKUP', 'FR-21 Customer', null, null,
-    now() + interval '2 hours', null, 'fr21-multifail', 'CASH'
+    '2026-01-05T12:00', null, 'fr21-multifail', 'CASH'
   );
 exception
   when others then

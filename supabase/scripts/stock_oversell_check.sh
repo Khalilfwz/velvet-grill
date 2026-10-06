@@ -188,7 +188,7 @@ set local role authenticated;
 set local request.jwt.claim.sub = '$USER_A';
 select public.create_order(
   'PICKUP', 'FR-21 Race A', null, null,
-  now() + interval '2 hours', null, '$KEY_A', 'CASH'
+  '2026-01-05T12:00', null, '$KEY_A', 'CASH'
 );
 select pg_sleep(5);
 COMMIT;
@@ -226,7 +226,7 @@ set local role authenticated;
 set local request.jwt.claim.sub = '$USER_B';
 select public.create_order(
   'PICKUP', 'FR-21 Race B', null, null,
-  now() + interval '2 hours', null, '$KEY_B', 'CASH'
+  '2026-01-05T12:00', null, '$KEY_B', 'CASH'
 );
 COMMIT;
 SQL

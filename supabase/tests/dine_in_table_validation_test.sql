@@ -174,7 +174,7 @@ select throws_ok(
   $$
     select public.create_order(
       'PICKUP', 'FR-20 Customer A', null, null,
-      now() + interval '2 hours',
+      '2026-01-05T12:00',
       'e2020201-1111-1111-1111-111111111111', 'fr20-pickup-table', 'CASH'
     )
   $$,
@@ -205,7 +205,7 @@ select set_config(
   (
     select public.create_order(
       'PICKUP', 'FR-20 Customer A', null, null,
-      now() + interval '2 hours', null, 'fr20-pickup', 'CASH'
+      '2026-01-05T12:00', null, 'fr20-pickup', 'CASH'
     )::text
   ),
   true
