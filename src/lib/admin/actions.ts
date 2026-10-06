@@ -31,6 +31,7 @@ const CONFLICT = 'A record with that slug or name already exists.'
 const CONFLICT_TABLE = 'A table with that number already exists.'
 const INVALID_INPUT = 'Please check the submitted values and try again.'
 const ORDER_STATUS_ERROR = 'That status change is not allowed for this order.'
+const PAYMENT_CONFIRM_ERROR = 'That payment cannot be confirmed.'
 
 // Controlled SQLSTATEs raised by the admin_* RPCs plus the table constraints they
 // rely on. Anything else collapses to a generic message.
@@ -587,6 +588,57 @@ export async function updateOrderStatus(
 
   revalidatePath('/admin/orders')
   revalidatePath(`/orders/${parsed.data.orderId}`)
+
+  return { error: null }
+}
+
+export async function confirmCashPayment(
+  _previousState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const context = await getAdminContext()
+
+  if (!context) {
+    return { error: NOT_AUTHORIZED }
+  }
+
+  const orderId = str(formData.get('orderId')).trim()
+
+  if (!isUuid(orderId)) {
+    return { error: PAYMENT_CONFIRM_ERROR }
+  }
+
+  // The RPC is the sole writer of payment state and re-derives identity, admin
+  // authorization, CASH method authorization, the single-payment-row
+  // requirement, and the UNPAID source state. The browser only submits the
+  // order id and can never set payment_status itself. 42501 (unauthorized /
+  // not confirmable), 28000 (unauthenticated) and 22023 (illegal state) all
+  // collapse to one non-revealing message.
+  let errorCode: string | undefined
+
+  try {
+    const { error } = await context.supabase.rpc('confirm_order_payment', {
+      p_order_id: orderId,
+    } as Database['public']['Functions']['confirm_order_payment']['Args'])
+
+    if (error) {
+      errorCode = error.code
+    }
+  } catch {
+    return { error: GENERIC_ERROR }
+  }
+
+  if (errorCode) {
+    return {
+      error:
+        errorCode === '42501' || errorCode === '28000' || errorCode === '22023'
+          ? PAYMENT_CONFIRM_ERROR
+          : GENERIC_ERROR,
+    }
+  }
+
+  revalidatePath('/admin/orders')
+  revalidatePath(`/orders/${orderId}`)
 
   return { error: null }
 }

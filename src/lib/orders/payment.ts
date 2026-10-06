@@ -8,8 +8,8 @@ export type PaymentMethod = (typeof PAYMENT_METHODS)[number]
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   CASH: 'Cash',
-  DUMMY_QRIS: 'QRIS (dummy)',
-  DUMMY_BANK_TRANSFER: 'Bank transfer (dummy)',
+  DUMMY_QRIS: 'QRIS',
+  DUMMY_BANK_TRANSFER: 'Bank transfer',
 }
 
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
