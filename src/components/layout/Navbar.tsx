@@ -48,6 +48,22 @@ export default async function Navbar() {
     unreadCount = count ?? 0
   }
 
+  // Cart quantity badge. RLS scopes cart_items to the caller's own cart, so this
+  // sum is the authenticated customer's total item quantity. This is a
+  // display-only derivation: no cart state is cached on the client.
+  let cartCount = 0
+
+  if (userId) {
+    const { data: cartRows } = await supabase
+      .from('cart_items')
+      .select('quantity')
+
+    cartCount = (cartRows ?? []).reduce(
+      (sum, row) => sum + row.quantity,
+      0
+    )
+  }
+
   return (
     <header className="border-b border-border bg-surface">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -83,10 +99,16 @@ export default async function Navbar() {
 
           <Link
             href="/cart"
-            className={`transition-colors hover:text-brand ${focusClasses}`}
-            aria-label="Cart"
+            className={`relative transition-colors hover:text-brand ${focusClasses}`}
+            aria-label={cartCount > 0 ? `Cart (${cartCount} items)` : 'Cart'}
           >
             <ShoppingCart size={20} />
+
+            {cartCount > 0 && (
+              <span className="absolute -right-2 -top-2 min-w-[1rem] rounded-full bg-brand px-1 text-center text-[10px] font-semibold leading-4 text-white">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
           </Link>
 
           {email ? (
@@ -190,7 +212,7 @@ export default async function Navbar() {
               href="/cart"
               className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
             >
-              Cart
+              {cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}
             </Link>
 
             {email ? (

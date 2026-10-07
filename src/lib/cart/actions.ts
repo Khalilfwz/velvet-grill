@@ -11,6 +11,7 @@ import type { OptionSelections } from '@/lib/catalog/product-options'
 
 export type CartActionState = {
   error: string | null
+  notice?: string | null
 }
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
@@ -20,6 +21,10 @@ const UNAVAILABLE_ERROR = 'This item is not available right now.'
 const INVALID_SELECTION_ERROR =
   'Some of your selected options are no longer available. Please review your choices.'
 const NOT_FOUND_ERROR = 'That cart item is no longer available.'
+
+// Success notices returned to the client for non-navigating cart mutations.
+const ADDED_NOTICE = 'Added to cart.'
+const UPDATED_NOTICE = 'Quantity updated.'
 
 // Application-flow limit only. The database invariant is quantity > 0.
 const MAX_QUANTITY = 99
@@ -283,9 +288,13 @@ export async function addToCart(
     return result
   }
 
-  // Success: deterministic feedback, outside the catch, and no redirect on failure.
+  // Success: stay on the product page. Refresh the cart and the storefront
+  // layout (Navbar cart count), then return an inline notice. The
+  // /login redirect for unauthenticated callers is preserved above.
   revalidatePath('/cart')
-  redirect('/cart')
+  revalidatePath('/', 'layout')
+
+  return { error: null, notice: ADDED_NOTICE }
 }
 
 export async function updateCartItemQuantity(
@@ -335,8 +344,9 @@ export async function updateCartItemQuantity(
   }
 
   revalidatePath('/cart')
+  revalidatePath('/', 'layout')
 
-  return result
+  return { error: null, notice: UPDATED_NOTICE }
 }
 
 export async function removeCartItem(
@@ -378,6 +388,7 @@ export async function removeCartItem(
   }
 
   revalidatePath('/cart')
+  revalidatePath('/', 'layout')
 
   return result
 }

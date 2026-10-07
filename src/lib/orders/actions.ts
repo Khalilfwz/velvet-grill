@@ -206,8 +206,10 @@ export async function placeOrder(
     return { error: mapRpcError(errorMessage) }
   }
 
-  // Success: revalidated outside the catch, then a deterministic redirect.
+  // Success: revalidated outside the catch, then a deterministic redirect. The
+  // storefront layout is refreshed too so the Navbar cart count resets to zero.
   revalidatePath('/cart')
+  revalidatePath('/', 'layout')
   redirect(`/orders/${orderId}`)
 }
 

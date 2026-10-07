@@ -84,6 +84,18 @@ export default function AddToCartForm({
         </p>
       )}
 
+      {state.notice && !state.error && (
+        <p role="status" className="text-sm font-medium text-brand">
+          {state.notice}{' '}
+          <Link
+            href="/cart"
+            className={`underline underline-offset-2 ${focusClasses}`}
+          >
+            View cart
+          </Link>
+        </p>
+      )}
+
       {state.error && (
         <p role="alert" className="text-sm text-red-600">
           {state.error}
