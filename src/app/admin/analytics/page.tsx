@@ -1,5 +1,7 @@
-import Link from 'next/link'
 import { requireAdminPage } from '@/lib/admin/guard'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
+import EmptyState from '@/components/admin/EmptyState'
+import FilterChips from '@/components/admin/FilterChips'
 import { formatIDR } from '@/lib/format-currency'
 import {
   ANALYTICS_RANGE_OPTIONS,
@@ -77,15 +79,65 @@ const FULFILLMENT_ROWS: { label: string; key: keyof AnalyticsMetrics }[] = [
   { label: 'Dine-in', key: 'fulfillment_dine_in' },
 ]
 
-const focusClasses =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+function BreakdownTable({
+  title,
+  labelHeader,
+  rows,
+  metrics,
+}: {
+  title: string
+  labelHeader: string
+  rows: { label: string; key: keyof AnalyticsMetrics }[]
+  metrics: AnalyticsMetrics
+}) {
+  // Share denominators stay local to each breakdown: the explicit sum of the
+  // rows listed in that table, never a cross-table or RPC-derived figure.
+  const total = rows.reduce((sum, row) => sum + Number(metrics[row.key]), 0)
 
-function chipClasses(active: boolean): string {
-  return `rounded-full border px-3 py-1 font-medium transition-colors ${focusClasses} ${
-    active
-      ? 'border-brand text-brand'
-      : 'border-border text-zinc-600 hover:border-brand hover:text-brand'
-  }`
+  return (
+    <section className="space-y-4">
+      <h2 className="font-display text-xl font-semibold text-foreground">
+        {title}
+      </h2>
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        <table className="w-full text-left text-sm">
+          <caption className="sr-only">
+            {title} breakdown; share is each row divided by the sum of the rows
+            listed in this table.
+          </caption>
+          <thead className="border-b border-border text-zinc-600">
+            <tr>
+              <th className="px-4 py-3 font-medium">{labelHeader}</th>
+              <th className="px-4 py-3 text-right font-medium">Orders</th>
+              <th className="px-4 py-3 text-right font-medium">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const value = Number(metrics[row.key])
+              const share =
+                total > 0 ? `${Math.round((value / total) * 100)}%` : '—'
+
+              return (
+                <tr
+                  key={row.key}
+                  className="border-b border-border last:border-b-0"
+                >
+                  <td className="px-4 py-3 text-zinc-600">{row.label}</td>
+                  <td className="px-4 py-3 text-right text-foreground tabular-nums">
+                    {value}
+                  </td>
+                  <td className="px-4 py-3 text-right text-zinc-600 tabular-nums">
+                    {share}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
 }
 
 export default async function AdminAnalyticsPage({
@@ -128,10 +180,13 @@ export default async function AdminAnalyticsPage({
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Analytics
-        </h1>
-        <p className="mt-4 text-red-600">Failed to load analytics.</p>
+        <AdminPageHeading
+          title="Analytics"
+          description="Operational order metrics for the selected range, computed from transactional orders."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load analytics.
+        </p>
       </div>
     )
   }
@@ -140,148 +195,77 @@ export default async function AdminAnalyticsPage({
     ? { ...EMPTY_METRICS, ...data[0] }
     : EMPTY_METRICS
 
+  const rangeChips = ANALYTICS_RANGE_OPTIONS.map((option) => {
+    const range = rangeForPreset(option.value, todayIso)
+
+    return {
+      value: `${range.from}..${range.to}`,
+      label: option.label,
+      href: `/admin/analytics?from=${range.from}&to=${range.to}`,
+    }
+  })
+
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Analytics
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Operational order metrics for the selected range, computed from
-          transactional orders.
+    <div className="space-y-8">
+      <AdminPageHeading
+        title="Analytics"
+        description="Operational order metrics for the selected range, computed from transactional orders."
+      />
+
+      <div className="space-y-3">
+        <FilterChips
+          ariaLabel="Analytics date range"
+          activeValue={`${from}..${to}`}
+          items={rangeChips}
+        />
+        <p className="text-sm text-zinc-600">
+          Range: {from} to {to} ({timeZone})
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        {ANALYTICS_RANGE_OPTIONS.map((option) => {
-          const range = rangeForPreset(option.value, todayIso)
-          const active = range.from === from && range.to === to
-
-          return (
-            <Link
-              key={option.value}
-              href={`/admin/analytics?from=${range.from}&to=${range.to}`}
-              className={chipClasses(active)}
-            >
-              {option.label}
-            </Link>
-          )
-        })}
-      </div>
-
-      <p className="text-sm text-zinc-600">
-        Range: {from} to {to} ({timeZone})
-      </p>
-
       <section className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm font-medium text-zinc-600">Total orders</p>
-          <p className="mt-2 font-display text-3xl font-bold text-foreground">
+          <p className="text-sm text-zinc-600">Total orders</p>
+          <p className="mt-1 font-display text-3xl font-bold text-foreground">
             {metrics.total_orders}
           </p>
         </div>
 
         <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm font-medium text-zinc-600">
+          <p className="text-sm text-zinc-600">
             Gross order value (excl. cancelled)
           </p>
-          <p className="mt-2 font-display text-3xl font-bold text-foreground">
+          <p className="mt-1 font-display text-3xl font-bold text-foreground">
             {formatIDR(Number(metrics.gross_order_value))}
           </p>
         </div>
       </section>
 
       {metrics.total_orders === 0 && (
-        <p className="text-sm text-zinc-600">No orders in this range.</p>
+        <EmptyState message="No orders in this range." />
       )}
 
       <div className="grid gap-8 lg:grid-cols-3">
-        <section className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-foreground">
-            Order status
-          </h2>
-          <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-zinc-600">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Orders</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ORDER_STATUS_ROWS.map((row) => (
-                  <tr
-                    key={row.key}
-                    className="border-b border-border last:border-b-0"
-                  >
-                    <td className="px-4 py-3 text-zinc-600">{row.label}</td>
-                    <td className="px-4 py-3 text-foreground">
-                      {metrics[row.key]}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <BreakdownTable
+          title="Order status"
+          labelHeader="Status"
+          rows={ORDER_STATUS_ROWS}
+          metrics={metrics}
+        />
 
-        <section className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-foreground">
-            Payment status
-          </h2>
-          <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-zinc-600">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Orders</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PAYMENT_STATUS_ROWS.map((row) => (
-                  <tr
-                    key={row.key}
-                    className="border-b border-border last:border-b-0"
-                  >
-                    <td className="px-4 py-3 text-zinc-600">{row.label}</td>
-                    <td className="px-4 py-3 text-foreground">
-                      {metrics[row.key]}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <BreakdownTable
+          title="Payment status"
+          labelHeader="Status"
+          rows={PAYMENT_STATUS_ROWS}
+          metrics={metrics}
+        />
 
-        <section className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-foreground">
-            Fulfillment
-          </h2>
-          <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-zinc-600">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Orders</th>
-                </tr>
-              </thead>
-              <tbody>
-                {FULFILLMENT_ROWS.map((row) => (
-                  <tr
-                    key={row.key}
-                    className="border-b border-border last:border-b-0"
-                  >
-                    <td className="px-4 py-3 text-zinc-600">{row.label}</td>
-                    <td className="px-4 py-3 text-foreground">
-                      {metrics[row.key]}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <BreakdownTable
+          title="Fulfillment"
+          labelHeader="Type"
+          rows={FULFILLMENT_ROWS}
+          metrics={metrics}
+        />
       </div>
     </div>
   )

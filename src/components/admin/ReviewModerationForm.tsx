@@ -35,7 +35,8 @@ export default function ReviewModerationForm({
       <SubmitButton
         label={isHiding ? 'Hide review' : 'Publish review'}
         pendingLabel={isHiding ? 'Hiding…' : 'Publishing…'}
-        className={isHiding ? 'bg-red-700 hover:bg-red-800' : ''}
+        variant={isHiding ? 'danger' : 'default'}
+        size="compact"
       />
     </form>
   )

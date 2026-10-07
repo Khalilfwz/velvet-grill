@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireAdminPage } from '@/lib/admin/guard'
 import { signOut } from '@/lib/auth/actions'
+import AdminNav from '@/components/admin/AdminNav'
 
 export const metadata = {
   title: 'Admin',
@@ -19,75 +20,16 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border bg-surface">
-        <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-6 px-6 py-4">
+        <nav className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
           <span className="font-display text-xl font-semibold text-brand">
             Admin
           </span>
 
-          <Link
-            href="/admin/categories"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Categories
-          </Link>
+          <div className="ml-auto flex items-center md:ml-4">
+            <AdminNav />
+          </div>
 
-          <Link
-            href="/admin/products"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Products
-          </Link>
-
-          <Link
-            href="/admin/orders"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Orders
-          </Link>
-
-          <Link
-            href="/admin/reviews"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Reviews
-          </Link>
-
-          <Link
-            href="/admin/tables"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Tables
-          </Link>
-
-          <Link
-            href="/admin/hours"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Hours
-          </Link>
-
-          <Link
-            href="/admin/settings"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Settings
-          </Link>
-
-          <Link
-            href="/admin/analytics"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Analytics
-          </Link>
-
-          <Link
-            href="/admin/audit"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
-            Audit
-          </Link>
-
-          <div className="ml-auto flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             <Link
               href="/menu"
               className={`text-sm font-medium text-zinc-600 transition-colors hover:text-brand ${focusClasses}`}
@@ -107,7 +49,7 @@ export default async function AdminLayout({
         </nav>
       </div>
 
-      <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
+      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
     </div>
   )
 }

@@ -6,10 +6,9 @@ import {
   type AdminActionState,
 } from '@/lib/admin/actions'
 import SubmitButton from './SubmitButton'
+import { adminInputClasses, adminLabelClasses } from './form-styles'
 
-const inputClasses =
-  'mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-const labelClasses = 'block text-sm font-medium text-foreground'
+const groupClasses = 'text-sm font-semibold text-foreground'
 
 export type RestaurantSettingsFormInitial = {
   restaurantName: string
@@ -32,63 +31,75 @@ export default function RestaurantSettingsForm({
   )
 
   return (
-    <form action={formAction} className="space-y-4">
-      <div>
-        <label className={labelClasses} htmlFor={`${uid}-name`}>
-          Restaurant name
-        </label>
-        <input
-          id={`${uid}-name`}
-          name="restaurantName"
-          defaultValue={initial.restaurantName}
-          required
-          maxLength={120}
-          className={inputClasses}
-        />
-      </div>
+    <form action={formAction} className="space-y-6">
+      <fieldset className="space-y-4">
+        <legend className={groupClasses}>Restaurant</legend>
 
-      <div>
-        <label className={labelClasses} htmlFor={`${uid}-address`}>
-          Address
-        </label>
-        <textarea
-          id={`${uid}-address`}
-          name="address"
-          defaultValue={initial.address ?? ''}
-          maxLength={1000}
-          rows={3}
-          className={inputClasses}
-        />
-      </div>
+        <div>
+          <label className={adminLabelClasses} htmlFor={`${uid}-name`}>
+            Restaurant name
+          </label>
+          <input
+            id={`${uid}-name`}
+            name="restaurantName"
+            defaultValue={initial.restaurantName}
+            readOnly
+            required
+            maxLength={120}
+            className={adminInputClasses}
+          />
+          <p className="mt-1 text-xs text-zinc-500">
+            The Velvet Grill brand name is fixed and cannot be changed here.
+          </p>
+        </div>
+      </fieldset>
 
-      <div>
-        <label className={labelClasses} htmlFor={`${uid}-phone`}>
-          Phone
-        </label>
-        <input
-          id={`${uid}-phone`}
-          name="phone"
-          defaultValue={initial.phone ?? ''}
-          maxLength={32}
-          className={inputClasses}
-        />
-      </div>
+      <fieldset className="space-y-4">
+        <legend className={groupClasses}>Contact &amp; locale</legend>
 
-      <div>
-        <label className={labelClasses} htmlFor={`${uid}-timezone`}>
-          Timezone
-        </label>
-        <input
-          id={`${uid}-timezone`}
-          name="timezone"
-          defaultValue={initial.timezone}
-          required
-          maxLength={120}
-          className={inputClasses}
-        />
-      </div>
+        <div>
+          <label className={adminLabelClasses} htmlFor={`${uid}-address`}>
+            Address
+          </label>
+          <textarea
+            id={`${uid}-address`}
+            name="address"
+            defaultValue={initial.address ?? ''}
+            maxLength={1000}
+            rows={3}
+            className={adminInputClasses}
+          />
+        </div>
 
-      <p className="text-sm text-zinc-600">Currency: IDR (fixed)</p>
+        <div>
+          <label className={adminLabelClasses} htmlFor={`${uid}-phone`}>
+            Phone
+          </label>
+          <input
+            id={`${uid}-phone`}
+            name="phone"
+            defaultValue={initial.phone ?? ''}
+            maxLength={32}
+            className={adminInputClasses}
+          />
+        </div>
+
+        <div>
+          <label className={adminLabelClasses} htmlFor={`${uid}-timezone`}>
+            Timezone
+          </label>
+          <input
+            id={`${uid}-timezone`}
+            name="timezone"
+            defaultValue={initial.timezone}
+            required
+            maxLength={120}
+            className={adminInputClasses}
+          />
+        </div>
+
+        <p className="text-sm text-zinc-600">Currency: IDR (fixed)</p>
+      </fieldset>
 
       {state.error && (
         <p role="alert" className="text-sm text-red-600">

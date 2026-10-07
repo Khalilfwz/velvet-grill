@@ -5,6 +5,7 @@ import BackLink from '@/components/navigation/BackLink'
 import ProductImageForm from '@/components/admin/ProductImageForm'
 import OptionGroupForm from '@/components/admin/OptionGroupForm'
 import OptionForm from '@/components/admin/OptionForm'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
 import { orderProductImages } from '@/lib/catalog/product-images'
 
 export const metadata = {
@@ -44,10 +45,13 @@ export default async function AdminProductDetailPage({
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Product
-        </h1>
-        <p className="mt-4 text-red-600">Failed to load product.</p>
+        <AdminPageHeading
+          title="Product"
+          description="Failed to load this product."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load product.
+        </p>
       </div>
     )
   }
@@ -67,7 +71,7 @@ export default async function AdminProductDetailPage({
   })
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div>
         <BackLink
           route="admin-product"
@@ -75,13 +79,14 @@ export default async function AdminProductDetailPage({
           className="text-sm font-medium text-brand transition-colors hover:text-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         />
 
-        <h1 className="mt-4 font-display text-3xl font-bold text-foreground">
-          {product.name}
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          /menu/{product.slug}
-          {!product.is_available && ' · hidden from the public menu'}
-        </p>
+        <div className="mt-4">
+          <AdminPageHeading
+            title={product.name}
+            description={`/menu/${product.slug}${
+              product.is_available ? '' : ' · hidden from the public menu'
+            }`}
+          />
+        </div>
       </div>
 
       <section className="rounded-xl border border-border bg-surface p-6">
@@ -113,7 +118,7 @@ export default async function AdminProductDetailPage({
         </h2>
 
         <div className="space-y-4">
-          {images.map((image) => (
+          {images.map((image, index) => (
             <div
               key={image.id}
               className="rounded-xl border border-border bg-surface p-4"
@@ -121,6 +126,7 @@ export default async function AdminProductDetailPage({
               <ProductImageForm
                 productId={product.id}
                 productSlug={product.slug}
+                position={index + 1}
                 initial={{
                   id: image.id,
                   storagePath: image.storage_path,
@@ -134,7 +140,7 @@ export default async function AdminProductDetailPage({
 
           <div className="rounded-xl border border-dashed border-border bg-surface p-4">
             <h3 className="text-sm font-semibold text-foreground">Add image</h3>
-            <div className="mt-3 max-w-xl">
+            <div className="mt-3">
               <ProductImageForm
                 productId={product.id}
                 productSlug={product.slug}

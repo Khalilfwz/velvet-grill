@@ -1,6 +1,10 @@
-import Link from 'next/link'
 import { requireAdminPage } from '@/lib/admin/guard'
 import ReviewModerationForm from '@/components/admin/ReviewModerationForm'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
+import EmptyState from '@/components/admin/EmptyState'
+import FilterChips from '@/components/admin/FilterChips'
+import StatusBadge from '@/components/admin/StatusBadge'
+import { Star } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 
 export const metadata = {
@@ -11,8 +15,32 @@ type ReviewStatus = Database['public']['Enums']['review_status']
 
 const REVIEW_STATUSES: ReviewStatus[] = ['PUBLISHED', 'HIDDEN']
 
+const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  PUBLISHED: 'Published',
+  HIDDEN: 'Hidden',
+}
+
 function isReviewStatus(value: string): value is ReviewStatus {
   return (REVIEW_STATUSES as string[]).includes(value)
+}
+
+function RatingStars({ rating }: { rating: number }) {
+  return (
+    <span
+      role="img"
+      aria-label={`Rated ${rating} out of 5`}
+      className="inline-flex items-center gap-0.5"
+    >
+      {[1, 2, 3, 4, 5].map((value) => (
+        <Star
+          key={value}
+          size={14}
+          aria-hidden="true"
+          className={value <= rating ? 'fill-current text-brand' : 'text-border'}
+        />
+      ))}
+    </span>
+  )
 }
 
 function excerpt(value: string | null): string {
@@ -57,10 +85,13 @@ export default async function AdminReviewsPage({
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Reviews
-        </h1>
-        <p className="mt-4 text-red-600">Failed to load reviews.</p>
+        <AdminPageHeading
+          title="Reviews"
+          description="Hide or republish customer reviews."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load reviews.
+        </p>
       </div>
     )
   }
@@ -68,100 +99,88 @@ export default async function AdminReviewsPage({
   const rows = reviews ?? []
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Reviews
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Hide or republish customer reviews.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <AdminPageHeading
+        title="Reviews"
+        description="Hide or republish customer reviews."
+      />
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <Link
-          href="/admin/reviews"
-          className={`rounded-full border px-3 py-1 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
-            statusFilter
-              ? 'border-border text-zinc-600 hover:border-brand hover:text-brand'
-              : 'border-brand text-brand'
-          }`}
-        >
-          All
-        </Link>
-        {REVIEW_STATUSES.map((status) => (
-          <Link
-            key={status}
-            href={`/admin/reviews?status=${status}`}
-            className={`rounded-full border px-3 py-1 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
-              statusFilter === status
-                ? 'border-brand text-brand'
-                : 'border-border text-zinc-600 hover:border-brand hover:text-brand'
-            }`}
-          >
-            {status}
-          </Link>
-        ))}
-      </div>
+      <FilterChips
+        ariaLabel="Filter reviews by status"
+        activeValue={statusFilter ?? 'ALL'}
+        items={[
+          { value: 'ALL', label: 'All', href: '/admin/reviews' },
+          ...REVIEW_STATUSES.map((status) => ({
+            value: status,
+            label: REVIEW_STATUS_LABELS[status],
+            href: `/admin/reviews?status=${status}`,
+          })),
+        ]}
+      />
 
-      <section className="space-y-4">
+      <section>
         {rows.length === 0 ? (
-          <p className="text-sm text-zinc-600">No reviews found.</p>
+          <EmptyState
+            message={statusFilter ? 'No reviews with this status.' : 'No reviews found.'}
+          />
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-zinc-600">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Product</th>
-                  <th className="px-4 py-3 font-medium">Author</th>
-                  <th className="px-4 py-3 font-medium">Rating</th>
-                  <th className="px-4 py-3 font-medium">Review</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Created</th>
-                  <th className="px-4 py-3 font-medium">Moderate</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((review) => (
-                  <tr
-                    key={review.id}
-                    className="border-b border-border align-top last:border-b-0"
-                  >
-                    <td className="px-4 py-3 text-zinc-600">
-                      {review.products?.name ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {review.profiles?.full_name ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">{review.rating}</td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {review.title && (
-                        <span className="block font-medium text-foreground">
-                          {review.title}
-                        </span>
-                      )}
-                      {excerpt(review.content)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {review.status === 'PUBLISHED' ? (
-                        <span className="text-emerald-700">Published</span>
-                      ) : (
-                        <span className="text-zinc-500">Hidden</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {formatDateTime(review.created_at)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <ReviewModerationForm
-                        reviewId={review.id}
-                        status={review.status}
-                      />
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead className="border-b border-border text-zinc-600">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Product</th>
+                    <th className="px-4 py-3 font-medium">Author</th>
+                    <th className="px-4 py-3 font-medium">Rating</th>
+                    <th className="px-4 py-3 font-medium">Review</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Created</th>
+                    <th className="px-4 py-3 font-medium">Moderate</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((review) => (
+                    <tr
+                      key={review.id}
+                      className="border-b border-border align-top last:border-b-0"
+                    >
+                      <td className="px-4 py-3 text-zinc-600">
+                        {review.products?.name ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600">
+                        {review.profiles?.full_name ?? '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <RatingStars rating={review.rating} />
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600">
+                        {review.title && (
+                          <span className="block font-medium text-foreground">
+                            {review.title}
+                          </span>
+                        )}
+                        {excerpt(review.content)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge
+                          label={REVIEW_STATUS_LABELS[review.status]}
+                          tone={review.status === 'PUBLISHED' ? 'brand' : 'muted'}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600">
+                        {formatDateTime(review.created_at)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <ReviewModerationForm
+                          reviewId={review.id}
+                          status={review.status}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>

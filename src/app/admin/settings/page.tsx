@@ -1,5 +1,6 @@
 import { requireAdminPage } from '@/lib/admin/guard'
 import RestaurantSettingsForm from '@/components/admin/RestaurantSettingsForm'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
 
 export const metadata = {
   title: 'Settings',
@@ -19,27 +20,26 @@ export default async function AdminSettingsPage() {
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Settings
-        </h1>
-        <p className="mt-4 text-red-600">Failed to load restaurant settings.</p>
+        <AdminPageHeading
+          title="Settings"
+          description="Update the restaurant contact details."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load restaurant settings.
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Settings
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Update the restaurant contact details.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <AdminPageHeading
+        title="Settings"
+        description="Update the restaurant contact details."
+      />
 
       <section className="rounded-xl border border-border bg-surface p-6">
-        <div className="max-w-xl">
+        <div className="max-w-2xl">
           <RestaurantSettingsForm
             initial={{
               restaurantName: settings?.restaurant_name ?? 'Velvet Grill',

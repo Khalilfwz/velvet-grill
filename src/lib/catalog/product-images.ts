@@ -44,3 +44,14 @@ export function getProductImageUrl(
     .from(PRODUCT_IMAGES_BUCKET)
     .getPublicUrl(storagePath).data.publicUrl
 }
+
+/**
+ * Client-safe equivalent of getProductImageUrl for previews rendered from the
+ * NEXT_PUBLIC_SUPABASE_URL. Mirrors the storage SDK's public URL format.
+ */
+export function productImagePublicUrl(
+  storagePath: string,
+  supabaseUrl: string
+): string {
+  return `${supabaseUrl.replace(/\/+$/, '')}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${storagePath}`
+}

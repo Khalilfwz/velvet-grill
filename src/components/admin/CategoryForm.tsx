@@ -3,10 +3,9 @@
 import { useActionState, useId } from 'react'
 import { saveCategory, type AdminActionState } from '@/lib/admin/actions'
 import SubmitButton from './SubmitButton'
+import { adminInputClasses, adminLabelClasses } from './form-styles'
 
-const inputClasses =
-  'mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-const labelClasses = 'block text-sm font-medium text-foreground'
+const helperClasses = 'mt-1 text-xs text-zinc-500'
 
 export type CategoryFormInitial = {
   id: string
@@ -31,9 +30,17 @@ export default function CategoryForm({
   return (
     <form action={formAction} className="space-y-4">
       {initial && <input type="hidden" name="id" value={initial.id} />}
+      {/* Storefront category imagery is derived from product images, so the
+          path is no longer editable here. It is still submitted so saving
+          another field does not silently clear existing data. */}
+      <input
+        type="hidden"
+        name="imagePath"
+        value={initial?.imagePath ?? ''}
+      />
 
       <div>
-        <label className={labelClasses} htmlFor={`${uid}-name`}>
+        <label className={adminLabelClasses} htmlFor={`${uid}-name`}>
           Name
         </label>
         <input
@@ -42,12 +49,12 @@ export default function CategoryForm({
           defaultValue={initial?.name ?? ''}
           required
           maxLength={120}
-          className={inputClasses}
+          className={adminInputClasses}
         />
       </div>
 
       <div>
-        <label className={labelClasses} htmlFor={`${uid}-slug`}>
+        <label className={adminLabelClasses} htmlFor={`${uid}-slug`}>
           Slug
         </label>
         <input
@@ -57,12 +64,12 @@ export default function CategoryForm({
           required
           maxLength={80}
           pattern="[a-z0-9]+(-[a-z0-9]+)*"
-          className={inputClasses}
+          className={adminInputClasses}
         />
       </div>
 
       <div>
-        <label className={labelClasses} htmlFor={`${uid}-description`}>
+        <label className={adminLabelClasses} htmlFor={`${uid}-description`}>
           Description
         </label>
         <textarea
@@ -71,26 +78,13 @@ export default function CategoryForm({
           defaultValue={initial?.description ?? ''}
           maxLength={1000}
           rows={3}
-          className={inputClasses}
+          className={adminInputClasses}
         />
       </div>
 
       <div>
-        <label className={labelClasses} htmlFor={`${uid}-image-path`}>
-          Image path
-        </label>
-        <input
-          id={`${uid}-image-path`}
-          name="imagePath"
-          defaultValue={initial?.imagePath ?? ''}
-          maxLength={255}
-          className={inputClasses}
-        />
-      </div>
-
-      <div>
-        <label className={labelClasses} htmlFor={`${uid}-sort-order`}>
-          Sort order
+        <label className={adminLabelClasses} htmlFor={`${uid}-sort-order`}>
+          Display order
         </label>
         <input
           id={`${uid}-sort-order`}
@@ -98,8 +92,9 @@ export default function CategoryForm({
           type="number"
           min={0}
           defaultValue={initial?.sortOrder ?? 0}
-          className={inputClasses}
+          className={adminInputClasses}
         />
+        <p className={helperClasses}>Lower numbers appear first.</p>
       </div>
 
       <label className="flex items-center gap-2 text-sm text-foreground">

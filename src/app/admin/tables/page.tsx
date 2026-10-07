@@ -1,5 +1,8 @@
 import { requireAdminPage } from '@/lib/admin/guard'
 import RestaurantTableForm from '@/components/admin/RestaurantTableForm'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
+import EmptyState from '@/components/admin/EmptyState'
+import StatusBadge from '@/components/admin/StatusBadge'
 
 export const metadata = {
   title: 'Tables',
@@ -18,8 +21,13 @@ export default async function AdminTablesPage() {
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">Tables</h1>
-        <p className="mt-4 text-red-600">Failed to load tables.</p>
+        <AdminPageHeading
+          title="Tables"
+          description="Create and update dine-in tables."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load tables.
+        </p>
       </div>
     )
   }
@@ -27,13 +35,11 @@ export default async function AdminTablesPage() {
   const rows = tables ?? []
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">Tables</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Create and update dine-in tables.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <AdminPageHeading
+        title="Tables"
+        description="Create and update dine-in tables."
+      />
 
       <section className="rounded-xl border border-border bg-surface p-6">
         <h2 className="font-display text-xl font-semibold text-brand">
@@ -51,7 +57,7 @@ export default async function AdminTablesPage() {
         </h2>
 
         {rows.length === 0 ? (
-          <p className="text-sm text-zinc-600">No tables yet.</p>
+          <EmptyState message="No tables yet." />
         ) : (
           <div className="space-y-3">
             {rows.map((table) => (
@@ -66,11 +72,10 @@ export default async function AdminTablesPage() {
                   <span className="text-sm text-zinc-500">
                     Capacity {table.capacity}
                   </span>
-                  {!table.is_active && (
-                    <span className="rounded-full bg-border/60 px-2 py-0.5 text-xs text-zinc-600">
-                      Inactive
-                    </span>
-                  )}
+                  <StatusBadge
+                    label={table.is_active ? 'Active' : 'Inactive'}
+                    tone={table.is_active ? 'neutral' : 'muted'}
+                  />
                 </summary>
 
                 <div className="mt-4 max-w-xl">

@@ -1,5 +1,7 @@
 import { requireAdminPage } from '@/lib/admin/guard'
 import BusinessHoursForm from '@/components/admin/BusinessHoursForm'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
+import StatusBadge from '@/components/admin/StatusBadge'
 
 export const metadata = {
   title: 'Business hours',
@@ -28,10 +30,13 @@ export default async function AdminHoursPage() {
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Business hours
-        </h1>
-        <p className="mt-4 text-red-600">Failed to load business hours.</p>
+        <AdminPageHeading
+          title="Business hours"
+          description="Set the opening hours for each day of the week."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load business hours.
+        </p>
       </div>
     )
   }
@@ -39,15 +44,11 @@ export default async function AdminHoursPage() {
   const byDay = new Map((hours ?? []).map((row) => [row.day_of_week, row]))
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Business hours
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Set the opening hours for each day of the week.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <AdminPageHeading
+        title="Business hours"
+        description="Set the opening hours for each day of the week."
+      />
 
       <section className="space-y-3">
         {DAY_LABELS.map((label, dayOfWeek) => {
@@ -60,13 +61,17 @@ export default async function AdminHoursPage() {
             >
               <summary className="flex cursor-pointer flex-wrap items-center gap-3">
                 <span className="font-medium text-foreground">{label}</span>
-                <span className="text-sm text-zinc-500">
-                  {row
-                    ? row.is_closed
-                      ? 'Closed'
-                      : `${row.opens_at?.slice(0, 5)} – ${row.closes_at?.slice(0, 5)}`
-                    : 'Not set'}
-                </span>
+                {row ? (
+                  row.is_closed ? (
+                    <StatusBadge tone="muted" label="Closed" />
+                  ) : (
+                    <span className="font-medium text-foreground">
+                      {row.opens_at?.slice(0, 5)} – {row.closes_at?.slice(0, 5)}
+                    </span>
+                  )
+                ) : (
+                  <span className="text-sm text-zinc-500">Not set</span>
+                )}
               </summary>
 
               <div className="mt-4 max-w-xl">

@@ -1,5 +1,7 @@
-import Link from 'next/link'
 import { requireAdminPage } from '@/lib/admin/guard'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
+import EmptyState from '@/components/admin/EmptyState'
+import FilterChips from '@/components/admin/FilterChips'
 import type { Json } from '@/lib/supabase/database.types'
 
 export const metadata = {
@@ -30,15 +32,12 @@ function isAuditEntityType(value: string): value is AuditEntityType {
   return (AUDIT_ENTITY_TYPES as readonly string[]).includes(value)
 }
 
-const focusClasses =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-
-function chipClasses(active: boolean): string {
-  return `rounded-full border px-3 py-1 font-medium transition-colors ${focusClasses} ${
-    active
-      ? 'border-brand text-brand'
-      : 'border-border text-zinc-600 hover:border-brand hover:text-brand'
-  }`
+// Display-only humanizing of the stored tokens; filter/query values stay raw.
+function entityLabel(entityType: string): string {
+  return entityType
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }
 
 function formatDateTime(value: string): string {
@@ -84,10 +83,13 @@ export default async function AdminAuditPage({
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Audit
-        </h1>
-        <p className="mt-4 text-red-600">Failed to load audit logs.</p>
+        <AdminPageHeading
+          title="Audit"
+          description="Sensitive admin actions recorded by the database, newest first."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load audit logs.
+        </p>
       </div>
     )
   }
@@ -95,102 +97,108 @@ export default async function AdminAuditPage({
   const rows = logs ?? []
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Audit
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Sensitive admin actions recorded by the database, newest first.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <AdminPageHeading
+        title="Audit"
+        description="Sensitive admin actions recorded by the database, newest first."
+      />
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <Link
-          href="/admin/audit"
-          className={chipClasses(entityFilter === null)}
-        >
-          All
-        </Link>
-        {AUDIT_ENTITY_TYPES.map((entityType) => (
-          <Link
-            key={entityType}
-            href={`/admin/audit?entity_type=${entityType}`}
-            className={chipClasses(entityFilter === entityType)}
-          >
-            {entityType}
-          </Link>
-        ))}
-      </div>
+      <FilterChips
+        ariaLabel="Filter audit logs by entity type"
+        activeValue={entityFilter ?? 'ALL'}
+        items={[
+          { value: 'ALL', label: 'All', href: '/admin/audit' },
+          ...AUDIT_ENTITY_TYPES.map((entityType) => ({
+            value: entityType,
+            label: entityLabel(entityType),
+            href: `/admin/audit?entity_type=${entityType}`,
+          })),
+        ]}
+      />
 
-      <section className="space-y-4">
+      <section>
         {rows.length === 0 ? (
-          <p className="text-sm text-zinc-600">No audit entries found.</p>
+          <EmptyState
+            message={
+              entityFilter
+                ? 'No audit entries for this entity type.'
+                : 'No audit entries found.'
+            }
+          />
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-zinc-600">
-                <tr>
-                  <th className="px-4 py-3 font-medium">When</th>
-                  <th className="px-4 py-3 font-medium">Actor</th>
-                  <th className="px-4 py-3 font-medium">Action</th>
-                  <th className="px-4 py-3 font-medium">Entity</th>
-                  <th className="px-4 py-3 font-medium">Entity id</th>
-                  <th className="px-4 py-3 font-medium">Metadata</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((log) => (
-                  <tr
-                    key={log.id}
-                    className="border-b border-border align-top last:border-b-0"
-                  >
-                    <td className="px-4 py-3 text-zinc-600">
-                      {formatDateTime(log.created_at)}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {log.profiles?.full_name ?? log.actor_user_id ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      {log.action}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {log.entity_type}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {log.entity_id ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      <details>
-                        <summary
-                          className={`cursor-pointer font-medium text-brand ${focusClasses}`}
-                        >
-                          View
-                        </summary>
-                        <div className="mt-2 space-y-2">
-                          <div>
-                            <p className="text-xs font-medium text-zinc-500">
-                              Before
-                            </p>
-                            <pre className="mt-1 max-w-md overflow-x-auto rounded-lg border border-border bg-background p-2 text-xs text-zinc-600">
-                              {formatMetadata(log.before_data)}
-                            </pre>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-zinc-500">
-                              After
-                            </p>
-                            <pre className="mt-1 max-w-md overflow-x-auto rounded-lg border border-border bg-background p-2 text-xs text-zinc-600">
-                              {formatMetadata(log.after_data)}
-                            </pre>
-                          </div>
-                        </div>
-                      </details>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[860px] text-left text-sm">
+                <thead className="border-b border-border text-zinc-600">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">When</th>
+                    <th className="px-4 py-3 font-medium">Actor</th>
+                    <th className="px-4 py-3 font-medium">Action</th>
+                    <th className="px-4 py-3 font-medium">Entity</th>
+                    <th className="px-4 py-3 font-medium">Entity id</th>
+                    <th className="px-4 py-3 font-medium">Metadata</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((log) => (
+                    <tr
+                      key={log.id}
+                      className="border-b border-border align-top last:border-b-0"
+                    >
+                      <td className="px-4 py-3 text-zinc-600">
+                        {formatDateTime(log.created_at)}
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600">
+                        {log.profiles?.full_name ?? log.actor_user_id ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-foreground">
+                        {log.action}
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600">
+                        {entityLabel(log.entity_type)}
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600">
+                        {log.entity_id ? (
+                          <span
+                            title={log.entity_id}
+                            className="block max-w-[16ch] truncate font-mono text-xs"
+                          >
+                            {log.entity_id}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600">
+                        <details>
+                          <summary className="cursor-pointer font-medium text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            View
+                          </summary>
+                          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <p className="text-xs font-medium text-zinc-500">
+                                Before
+                              </p>
+                              <pre className="mt-1 overflow-x-auto rounded-lg border border-border bg-background p-2 text-xs text-zinc-600">
+                                {formatMetadata(log.before_data)}
+                              </pre>
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium text-zinc-500">
+                                After
+                              </p>
+                              <pre className="mt-1 overflow-x-auto rounded-lg border border-border bg-background p-2 text-xs text-zinc-600">
+                                {formatMetadata(log.after_data)}
+                              </pre>
+                            </div>
+                          </div>
+                        </details>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>

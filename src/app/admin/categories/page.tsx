@@ -1,5 +1,8 @@
 import { requireAdminPage } from '@/lib/admin/guard'
 import CategoryForm from '@/components/admin/CategoryForm'
+import AdminPageHeading from '@/components/admin/AdminPageHeading'
+import EmptyState from '@/components/admin/EmptyState'
+import StatusBadge from '@/components/admin/StatusBadge'
 
 export const metadata = {
   title: 'Categories',
@@ -19,10 +22,13 @@ export default async function AdminCategoriesPage() {
 
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Categories
-        </h1>
-        <p className="mt-4 text-red-600">Failed to load categories.</p>
+        <AdminPageHeading
+          title="Categories"
+          description="Create and update menu categories."
+        />
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          Failed to load categories.
+        </p>
       </div>
     )
   }
@@ -30,15 +36,11 @@ export default async function AdminCategoriesPage() {
   const rows = categories ?? []
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Categories
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Create and update menu categories.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <AdminPageHeading
+        title="Categories"
+        description="Create and update menu categories."
+      />
 
       <section className="rounded-xl border border-border bg-surface p-6">
         <h2 className="font-display text-xl font-semibold text-brand">
@@ -56,7 +58,7 @@ export default async function AdminCategoriesPage() {
         </h2>
 
         {rows.length === 0 ? (
-          <p className="text-sm text-zinc-600">No categories yet.</p>
+          <EmptyState message="No categories yet." />
         ) : (
           <div className="space-y-3">
             {rows.map((category) => (
@@ -69,11 +71,10 @@ export default async function AdminCategoriesPage() {
                     {category.name}
                   </span>
                   <span className="text-sm text-zinc-500">/{category.slug}</span>
-                  {!category.is_active && (
-                    <span className="rounded-full bg-border/60 px-2 py-0.5 text-xs text-zinc-600">
-                      Inactive
-                    </span>
-                  )}
+                  <StatusBadge
+                    label={category.is_active ? 'Active' : 'Inactive'}
+                    tone={category.is_active ? 'neutral' : 'muted'}
+                  />
                 </summary>
 
                 <div className="mt-4 max-w-xl">

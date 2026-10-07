@@ -1,6 +1,7 @@
 import Image from 'next/image'
 
-function isUnoptimized(src: string): boolean {
+// Exported for admin previews that need the same optimization exceptions.
+export function isUnoptimizedProductImage(src: string): boolean {
   if (/\.svg$/i.test(src)) {
     return true
   }
@@ -38,7 +39,7 @@ export default function ProductImage({
           fill
           sizes={sizes}
           preload={preload}
-          unoptimized={isUnoptimized(src)}
+          unoptimized={isUnoptimizedProductImage(src)}
           className="object-cover"
         />
       )}
