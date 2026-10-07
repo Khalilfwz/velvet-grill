@@ -1,6 +1,7 @@
 import { requireAdminPage } from '@/lib/admin/guard'
 import OrderStatusForm from '@/components/admin/OrderStatusForm'
 import ConfirmCashPaymentButton from '@/components/admin/ConfirmCashPaymentButton'
+import RefundPaymentButton from '@/components/admin/RefundPaymentButton'
 import AdminPageHeading from '@/components/admin/AdminPageHeading'
 import EmptyState from '@/components/admin/EmptyState'
 import FilterChips from '@/components/admin/FilterChips'
@@ -157,6 +158,17 @@ export default async function AdminOrdersPage({
                       payment.method === 'CASH' &&
                       payment.status === 'UNPAID' &&
                       order.payment_status === 'UNPAID'
+                    // Mirror the RPC's eligibility only: exactly one payment
+                    // row, PAID in both representations, and a closed order
+                    // (CANCELLED or COMPLETED). The full-refund RPC stays
+                    // authoritative and never offers itself for in-flight
+                    // orders.
+                    const canRefundPayment =
+                      payment !== null &&
+                      payment.status === 'PAID' &&
+                      order.payment_status === 'PAID' &&
+                      (order.order_status === 'CANCELLED' ||
+                        order.order_status === 'COMPLETED')
 
                     return (
                       <tr
@@ -200,6 +212,9 @@ export default async function AdminOrdersPage({
                           <div className="space-y-2">
                             {canConfirmCash && (
                               <ConfirmCashPaymentButton orderId={order.id} />
+                            )}
+                            {canRefundPayment && (
+                              <RefundPaymentButton orderId={order.id} />
                             )}
                             <OrderStatusForm
                               orderId={order.id}

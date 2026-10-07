@@ -1177,6 +1177,10 @@ export type Database = {
           total_orders: number
         }[]
       }
+      admin_refund_order_payment: {
+        Args: { p_order_id: string }
+        Returns: Database["public"]["Enums"]["payment_status"]
+      }
       admin_save_business_hours: {
         Args: {
           p_closes_at: string

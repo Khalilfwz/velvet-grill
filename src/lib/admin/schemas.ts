@@ -214,6 +214,10 @@ export const orderStatusUpdateSchema = z.strictObject({
   note: optionalText(500),
 })
 
+export const refundOrderPaymentSchema = z.strictObject({
+  orderId: z.string().regex(UUID_PATTERN),
+})
+
 export const reviewModerationSchema = z.strictObject({
   reviewId: z.string().regex(UUID_PATTERN),
   status: z.enum(['PUBLISHED', 'HIDDEN']),
