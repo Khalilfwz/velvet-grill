@@ -38,6 +38,24 @@ export default async function Home() {
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
   const isAuthenticated = Boolean(claimsData?.claims)
+  const userId =
+    typeof claimsData?.claims?.sub === 'string' ? claimsData.claims.sub : null
+
+  // Same profile-derived role source as the Navbar: the role comes from the
+  // caller's own profile row, the same source the /admin guard reads. Admins
+  // keep full backend order access; the hero only skips customer commerce
+  // navigation.
+  let isAdmin = false
+
+  if (userId) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_active')
+      .eq('id', userId)
+      .maybeSingle()
+
+    isAdmin = profile?.role === 'ADMIN' && profile.is_active === true
+  }
 
   const [categoriesResult, productsResult, settingsResult, hoursResult] =
     await Promise.all([
@@ -194,13 +212,15 @@ export default async function Home() {
                 Browse the menu
               </Link>
 
-              {isAuthenticated ? (
-                <Link href="/orders" className={ghostLinkClasses}>
-                  View my orders
-                </Link>
-              ) : (
+              {!isAuthenticated && (
                 <Link href="/login" className={ghostLinkClasses}>
                   Sign in
+                </Link>
+              )}
+
+              {isAuthenticated && !isAdmin && (
+                <Link href="/orders" className={ghostLinkClasses}>
+                  View my orders
                 </Link>
               )}
             </div>
