@@ -1,4 +1,5 @@
 import Navbar from '@/components/layout/Navbar'
+import StorefrontFooter from '@/components/layout/StorefrontFooter'
 
 export default function StorefrontLayout({
   children,
@@ -9,6 +10,7 @@ export default function StorefrontLayout({
     <>
       <Navbar />
       {children}
+      <StorefrontFooter />
     </>
   )
 }

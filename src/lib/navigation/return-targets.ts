@@ -14,7 +14,7 @@ export const RETURN_TARGETS = {
   menu: { href: '/menu', label: 'Back to menu' },
   wishlist: { href: '/wishlist', label: 'Back to wishlist' },
   cart: { href: '/cart', label: 'Back to cart' },
-  orders: { href: '/orders', label: 'Back to My Orders' },
+  orders: { href: '/orders', label: 'Back to my orders' },
   notifications: { href: '/notifications', label: 'Back to notifications' },
   'admin-products': { href: '/admin/products', label: 'Back to products' },
 } as const

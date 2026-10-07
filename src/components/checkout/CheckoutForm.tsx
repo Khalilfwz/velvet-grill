@@ -259,7 +259,8 @@ export default function CheckoutForm({
 
       <div>
         <label htmlFor="customerNote" className={labelClasses}>
-          Note <span className="font-normal text-zinc-600">(optional)</span>
+          Order note{' '}
+          <span className="font-normal text-zinc-600">(optional)</span>
         </label>
         <textarea
           id="customerNote"

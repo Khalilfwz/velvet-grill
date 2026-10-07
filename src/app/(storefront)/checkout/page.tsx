@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import CheckoutForm from '@/components/checkout/CheckoutForm'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
 import { loadCartSummary } from '@/lib/cart/summary'
 import { formatIDR } from '@/lib/format-currency'
 
@@ -30,11 +32,9 @@ export default async function CheckoutPage({
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-4xl">
-          <h1 className="font-display text-4xl font-bold text-foreground">
-            Checkout
-          </h1>
+          <PageHeader title="Checkout" />
 
-          <p className="mt-4 text-red-600">Failed to load your cart.</p>
+          <ErrorState message="Failed to load your cart." />
         </div>
       </main>
     )
@@ -81,13 +81,9 @@ export default async function CheckoutPage({
           Back to cart
         </Link>
 
-        <p className="mt-6 text-sm font-medium uppercase tracking-widest text-brand">
-          Velvet Grill
-        </p>
-
-        <h1 className="mt-2 font-display text-4xl font-bold text-foreground">
-          Checkout
-        </h1>
+        <div className="mt-6">
+          <PageHeader title="Checkout" />
+        </div>
 
         <section className="mt-8 rounded-xl border border-border bg-surface p-6 shadow-sm">
           <h2 className="font-display text-xl font-semibold text-foreground">

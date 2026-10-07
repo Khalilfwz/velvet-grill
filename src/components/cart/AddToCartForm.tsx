@@ -51,7 +51,7 @@ export default function AddToCartForm({
         <input key={optionId} type="hidden" name="optionIds" value={optionId} />
       ))}
 
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex w-full flex-wrap items-end gap-3">
         <div>
           <label htmlFor={quantityId} className="block text-sm font-medium text-foreground">
             Quantity
@@ -64,14 +64,14 @@ export default function AddToCartForm({
             max={99}
             step={1}
             defaultValue={1}
-            className={`mt-1 w-24 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground ${focusClasses}`}
+            className={`mt-1 w-24 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground ${focusClasses}`}
           />
         </div>
 
         <button
           type="submit"
           disabled={!complete || isPending}
-          className={`inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60 ${focusClasses}`}
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${focusClasses}`}
         >
           <ShoppingCart size={18} aria-hidden="true" />
           {isPending ? 'Adding…' : 'Add to cart'}

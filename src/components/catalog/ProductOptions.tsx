@@ -43,7 +43,7 @@ export default function ProductOptions({
   const selectedOptionIds = Object.values(selections).flat()
 
   return (
-    <div className="mt-6 space-y-6">
+    <div className="mt-6 space-y-8">
       {groups.map((group) => {
         const selectedIds = selections[group.id] ?? []
         const max = effectiveMax(group)
@@ -61,17 +61,23 @@ export default function ProductOptions({
 
         return (
           <fieldset key={group.id}>
-            <legend className="font-medium text-foreground">
+            <legend className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
               {group.name}
-              <span className="ml-2 text-sm font-normal text-zinc-600">
+              <span className="ml-2 text-xs font-normal normal-case tracking-normal text-zinc-600">
                 {selectionHint(group)}
               </span>
             </legend>
 
             {hasOptions && (
-              <div className="mt-3 space-y-2">
+              <div className="mt-4 space-y-2">
                 {allowNone && (
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm transition-colors hover:border-brand">
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${
+                      selectedIds.length === 0
+                        ? 'border-brand bg-brand/5'
+                        : 'border-transparent hover:border-border hover:bg-surface'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name={group.id}
@@ -83,7 +89,15 @@ export default function ProductOptions({
                       }
                       className={`h-4 w-4 accent-brand ${focusClasses}`}
                     />
-                    <span className="text-foreground">No thanks</span>
+                    <span
+                      className={
+                        selectedIds.length === 0
+                          ? 'font-medium text-brand'
+                          : 'text-foreground'
+                      }
+                    >
+                      No thanks
+                    </span>
                   </label>
                 )}
 
@@ -98,10 +112,12 @@ export default function ProductOptions({
                   return (
                     <label
                       key={option.id}
-                      className={`flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm transition-colors ${
+                      className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${
                         disabled
-                          ? 'cursor-not-allowed opacity-60'
-                          : 'cursor-pointer hover:border-brand'
+                          ? 'cursor-not-allowed border-transparent opacity-60'
+                          : checked
+                            ? 'cursor-pointer border-brand bg-brand/5'
+                            : 'cursor-pointer border-transparent hover:border-border hover:bg-surface'
                       }`}
                     >
                       <input
@@ -119,8 +135,14 @@ export default function ProductOptions({
                         }
                         className={`h-4 w-4 accent-brand ${focusClasses}`}
                       />
-                      <span className="text-foreground">{option.name}</span>
-                      <span className="ml-auto shrink-0 text-zinc-600">
+                      <span
+                        className={
+                          checked ? 'font-medium text-brand' : 'text-foreground'
+                        }
+                      >
+                        {option.name}
+                      </span>
+                      <span className="ml-auto shrink-0 text-zinc-600 tabular-nums">
                         {delta ?? 'Included'}
                       </span>
                     </label>
@@ -139,31 +161,35 @@ export default function ProductOptions({
         ids are re-validated against the database by the cart Server Action,
         which recomputes option membership and availability server-side.
       */}
-      <div role="status" className="border-t border-border pt-4">
-        <p className="flex flex-wrap items-baseline gap-x-2">
-          <span className="text-sm text-zinc-600">
-            {complete ? 'Total price' : 'Current price'}
-          </span>
-          <span className="font-display text-2xl font-medium text-brand">
-            {formatIDR(amount)}
-          </span>
-        </p>
-
-        {!complete && (
-          <p className="mt-1 text-sm text-zinc-600">
-            Choose the required options to see your total.
+      <div className="rounded-xl border border-border bg-surface p-6">
+        <div role="status">
+          <p className="flex flex-wrap items-baseline gap-x-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-600">
+              {complete ? 'Total price' : 'Current price'}
+            </span>
+            <span className="font-display text-3xl font-medium text-brand tabular-nums">
+              {formatIDR(amount)}
+            </span>
           </p>
+
+          {!complete && (
+            <p className="mt-1 text-sm text-zinc-600">
+              Choose the required options to see your total.
+            </p>
+          )}
+        </div>
+
+        {productId && (
+          <div className="mt-6">
+            <AddToCartForm
+              productId={productId}
+              optionIds={selectedOptionIds}
+              complete={complete}
+              isAuthenticated={isAuthenticated}
+            />
+          </div>
         )}
       </div>
-
-      {productId && (
-        <AddToCartForm
-          productId={productId}
-          optionIds={selectedOptionIds}
-          complete={complete}
-          isAuthenticated={isAuthenticated}
-        />
-      )}
     </div>
   )
 }

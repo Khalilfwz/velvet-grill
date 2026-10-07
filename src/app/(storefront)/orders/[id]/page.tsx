@@ -4,6 +4,9 @@ import { formatIDR } from '@/lib/format-currency'
 import ConfirmPaymentButton from '@/components/orders/ConfirmPaymentButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import BackLink from '@/components/navigation/BackLink'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
+import OrderStatusBadge from '@/components/orders/OrderStatusBadge'
 import { paymentMethodLabel, paymentStatusLabel } from '@/lib/orders/payment'
 
 const focusClasses =
@@ -57,7 +60,9 @@ export default async function OrderPage({
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-4xl">
-          <p className="text-red-600">Failed to load your order.</p>
+          <PageHeader title="Order" />
+
+          <ErrorState message="Failed to load your order." />
         </div>
       </main>
     )
@@ -109,19 +114,21 @@ export default async function OrderPage({
           Velvet Grill
         </p>
 
-        <h1 className="mt-2 font-display text-4xl font-bold text-foreground">
-          Order placed
-        </h1>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-4xl font-bold text-foreground">
+            Order {order.order_number}
+          </h1>
 
-        <p className="mt-2 text-zinc-600">
-          Order <span className="font-medium text-foreground">{order.order_number}</span>
-        </p>
+          <OrderStatusBadge status={order.order_status} />
+        </div>
 
         <section className="mt-8 rounded-xl border border-border bg-surface p-6 shadow-sm">
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-zinc-600">Status</dt>
-              <dd className="font-medium text-foreground">{order.order_status}</dd>
+              <dd className="mt-0.5">
+                <OrderStatusBadge status={order.order_status} />
+              </dd>
             </div>
 
             <div>
@@ -253,12 +260,14 @@ export default async function OrderPage({
               <dd className="text-foreground">{formatIDR(order.subtotal)}</dd>
             </div>
 
-            <div className="flex justify-between">
-              <dt className="text-zinc-600">Discount</dt>
-              <dd className="text-foreground">
-                {formatIDR(order.discount_total)}
-              </dd>
-            </div>
+            {order.discount_total > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-zinc-600">Discount</dt>
+                <dd className="text-foreground">
+                  {formatIDR(order.discount_total)}
+                </dd>
+              </div>
+            )}
 
             {order.coupon_code_snapshot && (
               <div className="flex justify-between">

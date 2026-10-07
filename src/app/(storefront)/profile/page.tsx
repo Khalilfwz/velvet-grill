@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import ProfileForm from '@/components/profile/ProfileForm'
 import AvatarForm from '@/components/profile/AvatarForm'
 import EmailChangeForm from '@/components/profile/EmailChangeForm'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
 import { getAvatarUrl } from '@/lib/profile/avatar'
 
 const focusClasses =
@@ -48,11 +50,9 @@ export default async function ProfilePage({
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-md">
-          <h1 className="font-display text-4xl font-bold text-foreground">
-            Profile
-          </h1>
+          <PageHeader title="Profile" />
 
-          <p className="mt-4 text-red-600">Failed to load your profile.</p>
+          <ErrorState message="Failed to load your profile." />
         </div>
       </main>
     )
@@ -69,17 +69,10 @@ export default async function ProfilePage({
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-md">
-        <p className="text-sm font-medium uppercase tracking-widest text-brand">
-          Velvet Grill
-        </p>
-
-        <h1 className="mt-2 font-display text-3xl font-bold text-foreground">
-          Profile
-        </h1>
-
-        <p className="mt-2 text-sm leading-6 text-zinc-600">
-          Manage the details associated with your account.
-        </p>
+        <PageHeader
+          title="Profile"
+          description="Manage the details associated with your account."
+        />
 
         {params.error && (
           <p
@@ -146,7 +139,7 @@ export default async function ProfilePage({
               href="/orders"
               className={`inline-block text-sm font-medium text-brand transition-colors hover:text-brand-light ${focusClasses}`}
             >
-              View my orders →
+              View my orders
             </Link>
           )}
         </div>

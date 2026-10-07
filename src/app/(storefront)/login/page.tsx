@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AuthForm from '@/components/auth/AuthForm'
+import PageHeader from '@/components/layout/PageHeader'
+
+export const metadata = {
+  title: 'Sign in',
+}
 
 export default async function LoginPage({
   searchParams,
@@ -19,17 +24,10 @@ export default async function LoginPage({
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-md">
-        <p className="text-sm font-medium uppercase tracking-widest text-brand">
-          Velvet Grill
-        </p>
-
-        <h1 className="mt-2 font-display text-3xl font-bold text-foreground">
-          Sign in
-        </h1>
-
-        <p className="mt-2 text-sm leading-6 text-zinc-600">
-          Sign in to manage your account, wishlist, and orders.
-        </p>
+        <PageHeader
+          title="Sign in"
+          description="Sign in to manage your account, wishlist, and orders."
+        />
 
         {params.error === 'confirmation' && (
           <p

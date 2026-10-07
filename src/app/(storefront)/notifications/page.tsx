@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ReturnLink from '@/components/navigation/ReturnLink'
 import NotificationToggle from '@/components/notifications/NotificationToggle'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
 
 const focusClasses =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
@@ -56,13 +58,9 @@ export default async function NotificationsPage() {
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-3xl">
-          <h1 className="font-display text-4xl font-bold text-foreground">
-            Notifications
-          </h1>
+          <PageHeader title="Notifications" />
 
-          <p className="mt-4 text-red-600">
-            Failed to load your notifications.
-          </p>
+          <ErrorState message="Failed to load your notifications." />
         </div>
       </main>
     )
@@ -73,17 +71,10 @@ export default async function NotificationsPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-medium uppercase tracking-widest text-brand">
-          Velvet Grill
-        </p>
-
-        <h1 className="mt-2 font-display text-4xl font-bold text-foreground">
-          Notifications
-        </h1>
-
-        <p className="mt-4 max-w-2xl text-zinc-600">
-          Updates about your orders and payments.
-        </p>
+        <PageHeader
+          title="Notifications"
+          description="Updates about your orders and payments."
+        />
 
         {rows.length === 0 ? (
           <div className="mt-12 rounded-xl border border-border bg-surface p-8 shadow-sm">
@@ -107,7 +98,9 @@ export default async function NotificationsPage() {
             {rows.map((notification) => (
               <li
                 key={notification.id}
-                className="rounded-xl border border-border bg-surface p-6 shadow-sm"
+                className={`rounded-xl border border-border bg-surface p-6 shadow-sm ${
+                  notification.is_read ? '' : 'border-l-4 border-l-brand'
+                }`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">

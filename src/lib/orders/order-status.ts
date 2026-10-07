@@ -22,6 +22,20 @@ export function nextOrderStatuses(status: OrderStatus): OrderStatus[] {
   return ORDER_STATUS_TRANSITIONS[status]
 }
 
+const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING_PAYMENT: 'Awaiting payment',
+  CONFIRMED: 'Confirmed',
+  PREPARING: 'Preparing',
+  READY: 'Ready',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+}
+
+/** Customer-facing label for an order status; mirrors paymentStatusLabel. */
+export function orderStatusLabel(status: string): string {
+  return ORDER_STATUS_LABELS[status as OrderStatus] ?? status
+}
+
 /**
  * Payment-aware transitions for the admin UI. Mirrors the BUG-02 invariant
  * enforced by public.update_order_status (migration 20261006000001):

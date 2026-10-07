@@ -25,7 +25,7 @@ export default function ConfirmPaymentButton({ orderId }: { orderId: string }) {
         disabled={isPending}
         className={`rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60 ${focusClasses}`}
       >
-        {isPending ? 'Confirming…' : 'Simulate payment'}
+        {isPending ? 'Confirming…' : 'Complete demo payment'}
       </button>
 
       {state.error && (

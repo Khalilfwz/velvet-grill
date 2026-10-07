@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Bell, Heart, ShoppingCart, User } from 'lucide-react'
+import { Bell, Heart, Menu as MenuIcon, ShoppingCart, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/auth/actions'
 
@@ -8,7 +8,9 @@ const focusClasses =
 
 const loginLinkClasses = `rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light ${focusClasses}`
 
-const signOutButtonClasses = `rounded-full border border-border px-5 py-2 text-sm font-medium text-foreground transition-colors hover:border-brand hover:text-brand ${focusClasses}`
+const signOutButtonClasses = `text-sm font-medium text-zinc-600 transition-colors hover:text-brand ${focusClasses}`
+
+const navLinkClasses = `text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`
 
 export default async function Navbar() {
   const supabase = await createClient()
@@ -69,59 +71,56 @@ export default async function Navbar() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className={`font-display text-2xl font-semibold text-brand ${focusClasses}`}
+          className={`font-display text-2xl font-medium tracking-tight text-brand ${focusClasses}`}
         >
           Velvet Grill
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
-          <Link
-            href="/menu"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
+        <div className="hidden items-center gap-5 md:flex lg:gap-6">
+          <Link href="/menu" className={navLinkClasses}>
             Menu
           </Link>
 
-          <Link
-            href="/about"
-            className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-          >
+          <Link href="/about" className={navLinkClasses}>
             About
           </Link>
 
-          <Link
-            href="/wishlist"
-            className={`transition-colors hover:text-brand ${focusClasses}`}
-            aria-label="Wishlist"
-          >
-            <Heart size={20} />
-          </Link>
+          {email && !isAdmin && (
+            <Link href="/orders" className={navLinkClasses}>
+              My Orders
+            </Link>
+          )}
 
-          <Link
-            href="/cart"
-            className={`relative transition-colors hover:text-brand ${focusClasses}`}
-            aria-label={cartCount > 0 ? `Cart (${cartCount} items)` : 'Cart'}
-          >
-            <ShoppingCart size={20} />
+          <span aria-hidden="true" className="h-5 w-px bg-border" />
 
-            {cartCount > 0 && (
-              <span className="absolute -right-2 -top-2 min-w-[1rem] rounded-full bg-brand px-1 text-center text-[10px] font-semibold leading-4 text-white">
-                {cartCount > 99 ? '99+' : cartCount}
-              </span>
-            )}
-          </Link>
+          {!isAdmin && (
+            <Link
+              href="/wishlist"
+              className={`transition-colors hover:text-brand ${focusClasses}`}
+              aria-label="Wishlist"
+            >
+              <Heart size={20} />
+            </Link>
+          )}
+
+          {!isAdmin && (
+            <Link
+              href="/cart"
+              className={`relative transition-colors hover:text-brand ${focusClasses}`}
+              aria-label={cartCount > 0 ? `Cart (${cartCount} items)` : 'Cart'}
+            >
+              <ShoppingCart size={20} />
+
+              {cartCount > 0 && (
+                <span className="absolute -right-2 -top-2 min-w-[1rem] rounded-full bg-brand px-1 text-center text-[10px] font-semibold leading-4 text-white">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </Link>
+          )}
 
           {email ? (
             <div className="flex items-center gap-4">
-              {!isAdmin && (
-                <Link
-                  href="/orders"
-                  className={`text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`}
-                >
-                  My Orders
-                </Link>
-              )}
-
               {!isAdmin && (
                 <Link
                   href="/notifications"
@@ -160,7 +159,7 @@ export default async function Navbar() {
               )}
 
               <span
-                className="max-w-[12rem] truncate text-sm text-zinc-600"
+                className="hidden max-w-[12rem] truncate text-xs text-zinc-500 lg:inline"
                 title={email}
               >
                 {email}
@@ -174,16 +173,17 @@ export default async function Navbar() {
             </div>
           ) : (
             <Link href="/login" className={loginLinkClasses}>
-              Login
+              Sign in
             </Link>
           )}
         </div>
 
         <details className="relative md:hidden">
           <summary
-            className={`cursor-pointer list-none rounded-md px-3 py-2 text-sm font-medium text-foreground ${focusClasses}`}
+            aria-label="Open menu"
+            className={`flex cursor-pointer list-none items-center justify-center rounded-md p-2 text-foreground ${focusClasses}`}
           >
-            Menu
+            <MenuIcon size={20} aria-hidden="true" />
           </summary>
 
           <div className="absolute right-0 top-full z-10 mt-2 w-48 rounded-xl border border-border bg-surface p-2 shadow-lg">
@@ -201,31 +201,35 @@ export default async function Navbar() {
               About
             </Link>
 
-            <Link
-              href="/wishlist"
-              className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
-            >
-              Wishlist
-            </Link>
+            {email && !isAdmin && (
+              <Link
+                href="/orders"
+                className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
+              >
+                My Orders
+              </Link>
+            )}
 
-            <Link
-              href="/cart"
-              className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
-            >
-              {cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}
-            </Link>
+            {!isAdmin && (
+              <Link
+                href="/wishlist"
+                className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
+              >
+                Wishlist
+              </Link>
+            )}
+
+            {!isAdmin && (
+              <Link
+                href="/cart"
+                className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
+              >
+                {cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}
+              </Link>
+            )}
 
             {email ? (
               <>
-                {!isAdmin && (
-                  <Link
-                    href="/orders"
-                    className={`block rounded-lg px-3 py-2 text-sm text-foreground hover:bg-background ${focusClasses}`}
-                  >
-                    My Orders
-                  </Link>
-                )}
-
                 {!isAdmin && (
                   <Link
                     href="/notifications"
@@ -271,7 +275,7 @@ export default async function Navbar() {
                 href="/login"
                 className={`block rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-light ${focusClasses}`}
               >
-                Login
+                Sign in
               </Link>
             )}
           </div>

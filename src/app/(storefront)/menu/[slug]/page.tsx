@@ -5,6 +5,8 @@ import ProductOptions from '@/components/catalog/ProductOptions'
 import BackLink from '@/components/navigation/BackLink'
 import AddToCartForm from '@/components/cart/AddToCartForm'
 import WishlistButton from '@/components/wishlist/WishlistButton'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
 import {
   getProductImageUrl,
   orderProductImages,
@@ -34,7 +36,7 @@ export default async function ProductPage({
   const { data: product, error } = await supabase
     .from('products')
     .select(
-      'id, name, description, base_price, categories(is_active), product_images(id, storage_path, alt_text, is_primary, sort_order, created_at), product_option_groups(id, name, selection_type, min_selections, max_selections, is_required, sort_order, is_active, product_options(id, group_id, name, price_delta, is_available, sort_order))'
+      'id, name, description, base_price, categories(is_active, name), product_images(id, storage_path, alt_text, is_primary, sort_order, created_at), product_option_groups(id, name, selection_type, min_selections, max_selections, is_required, sort_order, is_active, product_options(id, group_id, name, price_delta, is_available, sort_order))'
     )
     .eq('slug', slug)
     .eq('is_available', true)
@@ -46,7 +48,9 @@ export default async function ProductPage({
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-4xl">
-          <p className="text-red-600">Failed to load product.</p>
+          <PageHeader title="Product" eyebrow="Menu" />
+
+          <ErrorState message="Failed to load product." />
         </div>
       </main>
     )
@@ -75,7 +79,7 @@ export default async function ProductPage({
   // of the storefront for every viewer, including an admin browsing the menu.
   const { data: reviewRows } = await supabase
     .from('reviews')
-    .select('rating, title, content, created_at')
+    .select('id, rating, title, content, created_at')
     .eq('product_id', product.id)
     .eq('status', 'PUBLISHED')
     .order('created_at', { ascending: false })
@@ -104,74 +108,101 @@ export default async function ProductPage({
 
   return (
     <main className="min-h-screen bg-background px-6 py-12">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-6xl">
         <BackLink
           route="menu-product"
           from={from}
           className="text-sm font-medium text-brand transition-colors hover:text-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         />
 
-        <ProductImage
-          src={heroImageUrl}
-          alt={heroImage?.alt_text ?? product.name}
-          sizes="(max-width: 896px) 100vw, 896px"
-          preload
-          className="mt-6 aspect-[4/3] w-full rounded-xl"
-        />
-
-        <h1 className="mt-6 font-display text-4xl font-bold text-foreground">
-          {product.name}
-        </h1>
-
-        {product.description && (
-          <p className="mt-4 max-w-2xl leading-7 text-zinc-600">
-            {product.description}
-          </p>
-        )}
-
-        <div className="mt-6">
-          <WishlistButton
-            productId={product.id}
-            initialSaved={initialSaved}
-            isAuthenticated={isAuthenticated}
-          />
-        </div>
-
-        {optionGroups.length === 0 ? (
-          <div className="mt-6 space-y-4">
-            <p className="text-2xl font-medium text-brand">
-              {formatIDR(product.base_price)}
-            </p>
-
-            <AddToCartForm
-              productId={product.id}
-              optionIds={[]}
-              complete
-              isAuthenticated={isAuthenticated}
+        <div className="mt-6 grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-7 lg:sticky lg:top-8 lg:self-start">
+            <ProductImage
+              src={heroImageUrl}
+              alt={heroImage?.alt_text ?? product.name}
+              sizes="(max-width: 1024px) 100vw, 640px"
+              preload
+              className="aspect-[4/3] w-full rounded-2xl"
             />
-          </div>
-        ) : (
-          <ProductOptions
-            basePrice={product.base_price}
-            groups={optionGroups}
-            productId={product.id}
-            isAuthenticated={isAuthenticated}
-          />
-        )}
 
-        {extraImages.length > 0 && (
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {extraImages.map((image) => (
-              <ProductImage
-                key={image.id}
-                src={getProductImageUrl(supabase, image.storage_path)}
-                alt={image.alt_text ?? product.name}
-                sizes="(max-width: 640px) 50vw, 300px"
-                className="aspect-square rounded-lg"
-              />
-            ))}
+            {extraImages.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                {extraImages.map((image) => (
+                  <ProductImage
+                    key={image.id}
+                    src={getProductImageUrl(supabase, image.storage_path)}
+                    alt={image.alt_text ?? product.name}
+                    sizes="(max-width: 640px) 33vw, 160px"
+                    className="aspect-square rounded-lg"
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          <div className="lg:col-span-5">
+            {product.categories?.name && (
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
+                {product.categories.name}
+              </p>
+            )}
+
+            <h1 className="mt-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground sm:text-5xl">
+              {product.name}
+            </h1>
+
+            {product.description && (
+              <p className="mt-4 leading-7 text-zinc-600">
+                {product.description}
+              </p>
+            )}
+
+            <div className="mt-6">
+              <WishlistButton
+                productId={product.id}
+                initialSaved={initialSaved}
+                isAuthenticated={isAuthenticated}
+              />
+            </div>
+
+            {optionGroups.length === 0 ? (
+              <div className="mt-8 rounded-xl border border-border bg-surface p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-600">
+                  Price
+                </p>
+
+                <p className="mt-2 font-display text-3xl font-medium text-brand tabular-nums">
+                  {formatIDR(product.base_price)}
+                </p>
+
+                <div className="mt-6">
+                  <AddToCartForm
+                    productId={product.id}
+                    optionIds={[]}
+                    complete
+                    isAuthenticated={isAuthenticated}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8">
+                <p className="text-sm text-zinc-600">
+                  Base price:{' '}
+                  <span className="text-base font-medium text-brand tabular-nums">
+                    {formatIDR(product.base_price)}
+                  </span>
+                </p>
+
+                <ProductOptions
+                  basePrice={product.base_price}
+                  groups={optionGroups}
+                  productId={product.id}
+                  isAuthenticated={isAuthenticated}
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
         <section className="mt-12 border-t border-border pt-8">
           <h2 className="font-display text-2xl font-semibold text-foreground">
@@ -188,9 +219,9 @@ export default async function ProductPage({
               </p>
 
               <ul className="mt-6 space-y-4">
-                {reviews.map((review, index) => (
+                {reviews.map((review) => (
                   <li
-                    key={index}
+                    key={review.id}
                     className="rounded-xl border border-border bg-surface p-6 shadow-sm"
                   >
                     <p
@@ -214,7 +245,7 @@ export default async function ProductPage({
                     )}
 
                     <p className="mt-3 text-xs text-zinc-600">
-                      {formatReviewDate(review.created_at)} · Verified purchase
+                      {formatReviewDate(review.created_at)}
                     </p>
                   </li>
                 ))}

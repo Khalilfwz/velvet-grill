@@ -1,10 +1,17 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ReturnLink from '@/components/navigation/ReturnLink'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
 import {
   getProductImageUrl,
   selectPrimaryImage,
 } from '@/lib/catalog/product-images'
+import { formatIDR } from '@/lib/format-currency'
+
+const focusClasses =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
 
 export default async function MenuPage() {
   const supabase = await createClient()
@@ -12,7 +19,7 @@ export default async function MenuPage() {
   const [categoriesResult, productsResult] = await Promise.all([
     supabase
       .from('categories')
-      .select('id, name, slug, sort_order')
+      .select('id, name, slug, description, sort_order')
       .eq('is_active', true)
       .order('sort_order')
       .order('name'),
@@ -34,13 +41,9 @@ export default async function MenuPage() {
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-7xl">
-          <h1 className="font-display text-4xl font-bold text-foreground">
-            Our Menu
-          </h1>
+          <PageHeader title="Our Menu" />
 
-          <p className="mt-4 text-red-600">
-            Failed to load menu.
-          </p>
+          <ErrorState message="Failed to load menu." />
         </div>
       </main>
     )
@@ -74,56 +77,88 @@ export default async function MenuPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-7xl">
-        <p className="text-sm font-medium uppercase tracking-widest text-brand">
-          Velvet Grill
-        </p>
+        <PageHeader
+          title="Our Menu"
+          description="Explore our selection of steak, burgers, drinks, and desserts."
+        />
 
-        <h1 className="mt-2 font-display text-4xl font-bold text-foreground">
-          Our Menu
-        </h1>
-
-        <p className="mt-4 max-w-2xl text-zinc-600">
-          Explore our selection of steak, burgers, drinks, and desserts.
-        </p>
-
-        <div className="mt-12 space-y-14">
-          {categoryGroups.map((group) => (
-            <section key={group.category.id}>
-              <div className="mb-6">
-                <h2 className="font-display text-2xl font-semibold text-brand">
+        {categoryGroups.length > 0 && (
+          <nav
+            aria-label="Menu categories"
+            className="sticky top-0 z-20 mt-8 overflow-x-auto border-b border-border bg-background/95 py-3 backdrop-blur"
+          >
+            <div className="flex gap-x-6 whitespace-nowrap">
+              {categoryGroups.map((group) => (
+                <Link
+                  key={group.category.id}
+                  href={`#category-${group.category.slug}`}
+                  className={`text-xs font-semibold uppercase tracking-[0.2em] text-zinc-600 transition-colors hover:text-brand ${focusClasses}`}
+                >
                   {group.category.name}
-                </h2>
-              </div>
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
 
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {group.products.map((product) => {
-                  const primaryImage = selectPrimaryImage(
-                    product.product_images
-                  )
+        {categoryGroups.length === 0 ? (
+          <div className="mt-12 rounded-xl border border-border bg-surface p-8 shadow-sm">
+            <p className="font-display text-xl font-semibold text-foreground">
+              Our menu is being prepared
+            </p>
 
-                  return (
-                    <article key={product.id}>
-                      <ReturnLink
-                        origin="menu"
-                        href={`/menu/${product.slug}`}
-                        className="block h-full overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                      >
-                        <ProductImage
-                          src={
-                            primaryImage
-                              ? getProductImageUrl(
-                                  supabase,
-                                  primaryImage.storage_path
-                                )
-                              : null
-                          }
-                          alt=""
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="aspect-[4/3] w-full"
-                        />
+            <p className="mt-2 text-sm text-zinc-600">
+              New dishes will appear here soon. Please check back shortly.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-16 space-y-20">
+            {categoryGroups.map((group) => (
+              <section
+                key={group.category.id}
+                id={`category-${group.category.slug}`}
+                className="scroll-mt-24"
+              >
+                <div className="mb-8">
+                  <h2 className="font-display text-3xl font-medium leading-tight tracking-tight text-foreground">
+                    {group.category.name}
+                  </h2>
 
-                        <div className="p-6">
-                          <h3 className="font-display text-xl font-semibold text-foreground">
+                  {group.category.description && (
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+                      {group.category.description}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.products.map((product) => {
+                    const primaryImage = selectPrimaryImage(
+                      product.product_images
+                    )
+
+                    return (
+                      <article key={product.id}>
+                        <ReturnLink
+                          origin="menu"
+                          href={`/menu/${product.slug}`}
+                          className={`group block ${focusClasses}`}
+                        >
+                          <ProductImage
+                            src={
+                              primaryImage
+                                ? getProductImageUrl(
+                                    supabase,
+                                    primaryImage.storage_path
+                                  )
+                                : null
+                            }
+                            alt=""
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="aspect-[4/3] w-full rounded-lg"
+                          />
+
+                          <h3 className="mt-4 font-display text-xl font-medium leading-snug tracking-tight text-foreground transition-colors group-hover:text-brand">
                             {product.name}
                           </h3>
 
@@ -133,22 +168,18 @@ export default async function MenuPage() {
                             </p>
                           )}
 
-                          <p className="mt-4 font-medium text-brand">
-                            {new Intl.NumberFormat('id-ID', {
-                              style: 'currency',
-                              currency: 'IDR',
-                              maximumFractionDigits: 0,
-                            }).format(product.base_price)}
+                          <p className="mt-3 font-medium text-brand tabular-nums">
+                            {formatIDR(product.base_price)}
                           </p>
-                        </div>
-                      </ReturnLink>
-                    </article>
-                  )
-                })}
-              </div>
-            </section>
-          ))}
-        </div>
+                        </ReturnLink>
+                      </article>
+                    )
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   )

@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ReturnLink from '@/components/navigation/ReturnLink'
 import WishlistButton from '@/components/wishlist/WishlistButton'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
 import {
   getProductImageUrl,
   selectPrimaryImage,
@@ -37,11 +39,9 @@ export default async function WishlistPage() {
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-7xl">
-          <h1 className="font-display text-4xl font-bold text-foreground">
-            Your Wishlist
-          </h1>
+          <PageHeader title="Your Wishlist" />
 
-          <p className="mt-4 text-red-600">Failed to load your wishlist.</p>
+          <ErrorState message="Failed to load your wishlist." />
         </div>
       </main>
     )
@@ -52,17 +52,10 @@ export default async function WishlistPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-7xl">
-        <p className="text-sm font-medium uppercase tracking-widest text-brand">
-          Velvet Grill
-        </p>
-
-        <h1 className="mt-2 font-display text-4xl font-bold text-foreground">
-          Your Wishlist
-        </h1>
-
-        <p className="mt-4 max-w-2xl text-zinc-600">
-          Products you have saved for later.
-        </p>
+        <PageHeader
+          title="Your Wishlist"
+          description="Products you have saved for later."
+        />
 
         {wishlistItems.length === 0 ? (
           <div className="mt-12 rounded-xl border border-border bg-surface p-8 shadow-sm">
@@ -122,16 +115,23 @@ export default async function WishlistPage() {
                       </div>
                     </ReturnLink>
                   ) : (
-                    <div className="p-6 pb-0">
-                      <h2 className="font-display text-xl font-semibold text-foreground">
-                        Unavailable product
-                      </h2>
+                    <>
+                      <div
+                        className="aspect-[4/3] w-full bg-border/40"
+                        aria-hidden="true"
+                      />
 
-                      <p className="mt-2 text-sm text-zinc-600">
-                        This item is no longer available. You can remove it from
-                        your wishlist.
-                      </p>
-                    </div>
+                      <div className="p-6 pb-0">
+                        <h2 className="font-display text-xl font-semibold text-foreground">
+                          Unavailable product
+                        </h2>
+
+                        <p className="mt-2 text-sm text-zinc-600">
+                          This item is no longer available. You can remove it
+                          from your wishlist.
+                        </p>
+                      </div>
+                    </>
                   )}
 
                   <div className="mt-auto p-6">

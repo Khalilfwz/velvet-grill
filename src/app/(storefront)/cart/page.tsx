@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import CartLineControls from '@/components/cart/CartLineControls'
 import ReturnLink from '@/components/navigation/ReturnLink'
+import PageHeader from '@/components/layout/PageHeader'
+import ErrorState from '@/components/layout/ErrorState'
 import { getProductImageUrl } from '@/lib/catalog/product-images'
 import { loadCartSummary } from '@/lib/cart/summary'
 import { formatIDR } from '@/lib/format-currency'
@@ -25,11 +27,9 @@ export default async function CartPage() {
     return (
       <main className="min-h-screen bg-background px-6 py-12">
         <div className="mx-auto max-w-7xl">
-          <h1 className="font-display text-4xl font-bold text-foreground">
-            Your Cart
-          </h1>
+          <PageHeader title="Your Cart" />
 
-          <p className="mt-4 text-red-600">Failed to load your cart.</p>
+          <ErrorState message="Failed to load your cart." />
         </div>
       </main>
     )
@@ -40,17 +40,10 @@ export default async function CartPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-7xl">
-        <p className="text-sm font-medium uppercase tracking-widest text-brand">
-          Velvet Grill
-        </p>
-
-        <h1 className="mt-2 font-display text-4xl font-bold text-foreground">
-          Your Cart
-        </h1>
-
-        <p className="mt-4 max-w-2xl text-zinc-600">
-          Items you are planning to order.
-        </p>
+        <PageHeader
+          title="Your Cart"
+          description="Items you are planning to order."
+        />
 
         {lines.length === 0 ? (
           <div className="mt-12 rounded-xl border border-border bg-surface p-8 shadow-sm">
@@ -129,13 +122,15 @@ export default async function CartPage() {
                       </div>
                     )}
 
-                    {line.unitPrice !== null && line.lineTotal !== null && (
+                    {line.unitPrice !== null && line.lineTotal !== null ? (
                       <p className="font-medium text-brand">
                         {formatIDR(line.lineTotal)}
                         <span className="ml-2 text-sm font-normal text-zinc-600">
                           ({line.quantity} × {formatIDR(line.unitPrice)})
                         </span>
                       </p>
+                    ) : (
+                      <p className="text-sm text-zinc-600">Price unavailable</p>
                     )}
 
                     <CartLineControls
@@ -168,7 +163,7 @@ export default async function CartPage() {
               </p>
 
               {hasUnavailableLine ? (
-                <p className="mt-4 text-sm text-zinc-600">
+                <p className="mt-6 inline-block cursor-not-allowed rounded-full border border-border px-5 py-2 text-sm font-medium text-zinc-500">
                   Remove unavailable items before proceeding to checkout.
                 </p>
               ) : (
