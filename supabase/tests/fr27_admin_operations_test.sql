@@ -376,6 +376,7 @@ select is(
   (
     select count(*) from public.admin_audit_logs
     where action = 'RESTAURANT_TABLES_INSERT'
+      and actor_user_id = 'f2700000-0000-4000-8000-000000000001'
   ),
   1::bigint,
   'Only the successful table create was audited; rejects wrote nothing'
