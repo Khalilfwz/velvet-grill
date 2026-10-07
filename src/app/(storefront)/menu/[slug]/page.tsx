@@ -1,8 +1,8 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ProductOptions from '@/components/catalog/ProductOptions'
+import BackLink from '@/components/navigation/BackLink'
 import AddToCartForm from '@/components/cart/AddToCartForm'
 import WishlistButton from '@/components/wishlist/WishlistButton'
 import {
@@ -22,10 +22,13 @@ function formatReviewDate(value: string): string {
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { slug } = await params
+  const { from } = await searchParams
   const supabase = await createClient()
 
   const { data: product, error } = await supabase
@@ -102,12 +105,11 @@ export default async function ProductPage({
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-4xl">
-        <Link
-          href="/menu"
+        <BackLink
+          route="menu-product"
+          from={from}
           className="text-sm font-medium text-brand transition-colors hover:text-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-        >
-          Back to menu
-        </Link>
+        />
 
         <ProductImage
           src={heroImageUrl}

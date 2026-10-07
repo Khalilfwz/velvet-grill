@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import ReturnLink from '@/components/navigation/ReturnLink'
 import NotificationToggle from '@/components/notifications/NotificationToggle'
 
 const focusClasses =
@@ -112,12 +113,13 @@ export default async function NotificationsPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       {notification.order_id ? (
-                        <Link
+                        <ReturnLink
+                          origin="notifications"
                           href={`/orders/${notification.order_id}`}
                           className={`font-display text-lg font-semibold text-foreground hover:text-brand ${focusClasses}`}
                         >
                           {notification.title}
-                        </Link>
+                        </ReturnLink>
                       ) : (
                         <span className="font-display text-lg font-semibold text-foreground">
                           {notification.title}

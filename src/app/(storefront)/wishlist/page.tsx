@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
+import ReturnLink from '@/components/navigation/ReturnLink'
 import WishlistButton from '@/components/wishlist/WishlistButton'
 import {
   getProductImageUrl,
@@ -94,7 +95,8 @@ export default async function WishlistPage() {
                   className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm"
                 >
                   {product ? (
-                    <Link
+                    <ReturnLink
+                      origin="wishlist"
                       href={`/menu/${product.slug}`}
                       className={`block ${focusClasses}`}
                     >
@@ -118,7 +120,7 @@ export default async function WishlistPage() {
                           {formatIDR(product.base_price)}
                         </p>
                       </div>
-                    </Link>
+                    </ReturnLink>
                   ) : (
                     <div className="p-6 pb-0">
                       <h2 className="font-display text-xl font-semibold text-foreground">

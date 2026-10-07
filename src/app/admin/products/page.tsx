@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { requireAdminPage } from '@/lib/admin/guard'
 import ProductForm from '@/components/admin/ProductForm'
+import ReturnLink from '@/components/navigation/ReturnLink'
 import { formatIDR } from '@/lib/format-currency'
 
 export const metadata = {
@@ -119,12 +119,13 @@ export default async function AdminProductsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link
+                      <ReturnLink
+                        origin="admin-products"
                         href={`/admin/products/${product.id}`}
                         className="font-medium text-brand hover:text-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                       >
                         Edit
-                      </Link>
+                      </ReturnLink>
                     </td>
                   </tr>
                 ))}

@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
+import ReturnLink from '@/components/navigation/ReturnLink'
 import {
   getProductImageUrl,
   selectPrimaryImage,
@@ -103,7 +103,8 @@ export default async function MenuPage() {
 
                   return (
                     <article key={product.id}>
-                      <Link
+                      <ReturnLink
+                        origin="menu"
                         href={`/menu/${product.slug}`}
                         className="block h-full overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                       >
@@ -140,7 +141,7 @@ export default async function MenuPage() {
                             }).format(product.base_price)}
                           </p>
                         </div>
-                      </Link>
+                      </ReturnLink>
                     </article>
                   )
                 })}

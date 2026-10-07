@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Star } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import ReturnLink from '@/components/navigation/ReturnLink'
 import { formatIDR } from '@/lib/format-currency'
 import { paymentStatusLabel } from '@/lib/orders/payment'
 
@@ -166,7 +167,8 @@ export default async function OrdersPage() {
 
               return (
                 <li key={order.id}>
-                  <Link
+                  <ReturnLink
+                    origin="orders"
                     href={`/orders/${order.id}`}
                     className={`block rounded-xl border border-border bg-surface p-6 shadow-sm transition-colors hover:border-brand ${focusClasses}`}
                   >
@@ -264,7 +266,7 @@ export default async function OrdersPage() {
                     <p className="mt-3 text-sm font-medium text-brand">
                       View order →
                     </p>
-                  </Link>
+                  </ReturnLink>
                 </li>
               )
             })}

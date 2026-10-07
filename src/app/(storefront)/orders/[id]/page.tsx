@@ -1,9 +1,9 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatIDR } from '@/lib/format-currency'
 import ConfirmPaymentButton from '@/components/orders/ConfirmPaymentButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
+import BackLink from '@/components/navigation/BackLink'
 import { paymentMethodLabel, paymentStatusLabel } from '@/lib/orders/payment'
 
 const focusClasses =
@@ -22,10 +22,13 @@ function formatPickupAt(value: string): string {
 
 export default async function OrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { id } = await params
+  const { from } = await searchParams
 
   if (!UUID_PATTERN.test(id)) {
     notFound()
@@ -275,12 +278,11 @@ export default async function OrderPage({
           </dl>
         </section>
 
-        <Link
-          href="/orders"
+        <BackLink
+          route="order-detail"
+          from={from}
           className={`mt-8 inline-block rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light ${focusClasses}`}
-        >
-          Back to My Orders
-        </Link>
+        />
       </div>
     </main>
   )

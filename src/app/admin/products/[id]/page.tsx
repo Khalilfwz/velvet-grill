@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireAdminPage } from '@/lib/admin/guard'
 import ProductForm from '@/components/admin/ProductForm'
+import BackLink from '@/components/navigation/BackLink'
 import ProductImageForm from '@/components/admin/ProductImageForm'
 import OptionGroupForm from '@/components/admin/OptionGroupForm'
 import OptionForm from '@/components/admin/OptionForm'
@@ -13,10 +13,13 @@ export const metadata = {
 
 export default async function AdminProductDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { id } = await params
+  const { from } = await searchParams
   const { supabase } = await requireAdminPage()
 
   const [productResult, categoriesResult] = await Promise.all([
@@ -66,12 +69,11 @@ export default async function AdminProductDetailPage({
   return (
     <div className="space-y-10">
       <div>
-        <Link
-          href="/admin/products"
+        <BackLink
+          route="admin-product"
+          from={from}
           className="text-sm font-medium text-brand transition-colors hover:text-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-        >
-          Back to products
-        </Link>
+        />
 
         <h1 className="mt-4 font-display text-3xl font-bold text-foreground">
           {product.name}

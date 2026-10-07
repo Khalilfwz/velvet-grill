@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import CartLineControls from '@/components/cart/CartLineControls'
+import ReturnLink from '@/components/navigation/ReturnLink'
 import { getProductImageUrl } from '@/lib/catalog/product-images'
 import { loadCartSummary } from '@/lib/cart/summary'
 import { formatIDR } from '@/lib/format-currency'
@@ -93,12 +94,13 @@ export default async function CartPage() {
                     {line.productName ? (
                       <div>
                         <h2 className="font-display text-xl font-semibold text-foreground">
-                          <Link
+                          <ReturnLink
+                            origin="cart"
                             href={`/menu/${line.productSlug}`}
                             className={`transition-colors hover:text-brand ${focusClasses}`}
                           >
                             {line.productName}
-                          </Link>
+                          </ReturnLink>
                         </h2>
 
                         {line.options.length > 0 && (
