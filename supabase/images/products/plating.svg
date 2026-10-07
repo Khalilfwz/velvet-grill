@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Placeholder plated dish image">
-  <rect width="800" height="600" fill="#F5F1E8"/>
-  <circle cx="400" cy="300" r="200" fill="#FFFFFF"/>
-  <circle cx="400" cy="300" r="200" fill="none" stroke="#5A1E2B" stroke-opacity="0.2" stroke-width="6"/>
-  <circle cx="400" cy="300" r="70" fill="#5A1E2B" opacity="0.85"/>
-  <circle cx="300" cy="220" r="26" fill="#5A1E2B" opacity="0.35"/>
-  <circle cx="510" cy="380" r="26" fill="#5A1E2B" opacity="0.35"/>
-</svg>

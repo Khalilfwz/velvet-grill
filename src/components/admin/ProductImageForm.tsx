@@ -55,7 +55,7 @@ export default function ProductImageForm({
             defaultValue={initial?.storagePath ?? ''}
             required
             maxLength={255}
-            placeholder="steak.svg"
+            placeholder="products/wagyu-ribeye-steak/main.webp"
             className={inputClasses}
           />
         </div>

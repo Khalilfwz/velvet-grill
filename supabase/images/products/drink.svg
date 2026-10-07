@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Placeholder drink image">
-  <rect width="800" height="600" fill="#F5F1E8"/>
-  <path d="M300 200 L500 200 L470 440 Q400 470 330 440 Z" fill="#5A1E2B" opacity="0.85"/>
-  <rect x="290" y="180" width="220" height="26" rx="13" fill="#5A1E2B" opacity="0.35"/>
-  <circle cx="480" cy="170" r="24" fill="#5A1E2B" opacity="0.35"/>
-</svg>

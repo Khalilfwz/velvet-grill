@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Placeholder burger image">
-  <rect width="800" height="600" fill="#F5F1E8"/>
-  <path d="M220 300 Q400 170 580 300 Z" fill="#5A1E2B" opacity="0.85"/>
-  <rect x="220" y="300" width="360" height="40" rx="12" fill="#FFFFFF"/>
-  <rect x="230" y="340" width="340" height="34" rx="10" fill="#5A1E2B" opacity="0.35"/>
-  <rect x="220" y="374" width="360" height="40" rx="16" fill="#5A1E2B" opacity="0.85"/>
-</svg>

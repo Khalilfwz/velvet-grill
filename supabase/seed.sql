@@ -565,8 +565,9 @@ values (
 -- ------------------------------------------------------------
 -- Product Images
 --
--- Placeholder images (supabase/images/products/*.svg) seeded into the
--- product-images storage bucket. Replace with real photography later.
+-- Real storefront product images are seeded into the product-images
+-- storage bucket from supabase/images/products via config.toml.
+-- Each catalog product has one primary image.
 -- ------------------------------------------------------------
 
 insert into public.product_images (
@@ -583,32 +584,32 @@ values
 (
   '70000000-0000-0000-0000-000000000001',
   '20000000-0000-0000-0000-000000000001',
-  'steak.svg',
-  'Wagyu ribeye steak, grilled to order',
+  'products/wagyu-ribeye-steak/main.webp',
+  'Wagyu Ribeye Steak',
   0,
   true
 ),
 (
-  '70000000-0000-0000-0000-000000000002',
-  '20000000-0000-0000-0000-000000000001',
-  'plating.svg',
-  'Wagyu ribeye steak served with sides',
-  1,
-  false
-),
-(
   '70000000-0000-0000-0000-000000000003',
   '20000000-0000-0000-0000-000000000002',
-  'steak.svg',
-  'Tenderloin steak with truffle sauce',
+  'products/tenderloin-steak-truffle-sauce/main.webp',
+  'Tenderloin Steak with Truffle Sauce',
   0,
   true
 ),
 (
   '70000000-0000-0000-0000-000000000004',
   '20000000-0000-0000-0000-000000000003',
-  'steak.svg',
-  'Grilled salmon fillet',
+  'products/grilled-salmon-fillet/main.webp',
+  'Grilled Salmon Fillet',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000010',
+  '20000000-0000-0000-0000-000000000004',
+  'products/bbq-baby-back-ribs/main.webp',
+  'BBQ Baby Back Ribs',
   0,
   true
 ),
@@ -617,7 +618,7 @@ values
 (
   '70000000-0000-0000-0000-000000000005',
   '20000000-0000-0000-0000-000000000005',
-  'burger.svg',
+  'products/velvet-classic-burger/main.webp',
   'Velvet Classic Burger',
   0,
   true
@@ -625,8 +626,32 @@ values
 (
   '70000000-0000-0000-0000-000000000006',
   '20000000-0000-0000-0000-000000000006',
-  'burger.svg',
-  'Double cheese burger',
+  'products/double-cheese-burger/main.webp',
+  'Double Cheese Burger',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000011',
+  '20000000-0000-0000-0000-000000000007',
+  'products/crispy-chicken-burger/main.webp',
+  'Crispy Chicken Burger',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000012',
+  '20000000-0000-0000-0000-000000000008',
+  'products/french-fries/main.webp',
+  'French Fries',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000013',
+  '20000000-0000-0000-0000-000000000009',
+  'products/chicken-wings/main.webp',
+  'Chicken Wings',
   0,
   true
 ),
@@ -635,16 +660,32 @@ values
 (
   '70000000-0000-0000-0000-000000000007',
   '20000000-0000-0000-0000-000000000010',
-  'drink.svg',
-  'Velvet Sunset signature mocktail',
+  'products/velvet-sunset/main.webp',
+  'Velvet Sunset',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000014',
+  '20000000-0000-0000-0000-000000000011',
+  'products/fresh-orange-juice/main.webp',
+  'Fresh Orange Juice',
   0,
   true
 ),
 (
   '70000000-0000-0000-0000-000000000008',
   '20000000-0000-0000-0000-000000000012',
-  'drink.svg',
-  'Iced coffee',
+  'products/iced-coffee/main.webp',
+  'Iced Coffee',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000015',
+  '20000000-0000-0000-0000-000000000013',
+  'products/soft-drink/main.webp',
+  'Soft Drink',
   0,
   true
 ),
@@ -653,8 +694,32 @@ values
 (
   '70000000-0000-0000-0000-000000000009',
   '20000000-0000-0000-0000-000000000014',
-  'dessert.svg',
-  'Molten chocolate lava cake',
+  'products/molten-chocolate-lava-cake/main.webp',
+  'Molten Chocolate Lava Cake',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000016',
+  '20000000-0000-0000-0000-000000000015',
+  'products/cheesecake-slice/main.webp',
+  'Cheesecake Slice',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000017',
+  '20000000-0000-0000-0000-000000000016',
+  'products/ice-cream-sundae/main.webp',
+  'Ice Cream Sundae',
+  0,
+  true
+),
+(
+  '70000000-0000-0000-0000-000000000018',
+  '20000000-0000-0000-0000-000000000017',
+  'products/tiramisu/main.webp',
+  'Tiramisu',
   0,
   true
 );

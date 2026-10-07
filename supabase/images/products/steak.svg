@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Placeholder steak image">
-  <rect width="800" height="600" fill="#F5F1E8"/>
-  <circle cx="400" cy="300" r="200" fill="#5A1E2B" opacity="0.06"/>
-  <ellipse cx="400" cy="300" rx="180" ry="130" fill="#FFFFFF"/>
-  <ellipse cx="400" cy="300" rx="120" ry="86" fill="#5A1E2B" opacity="0.85"/>
-  <ellipse cx="360" cy="280" rx="40" ry="26" fill="#F5F1E8" opacity="0.5"/>
-</svg>
