@@ -35,6 +35,11 @@ type AnalyticsMetrics = {
   fulfillment_pickup: number
   fulfillment_dine_in: number
   gross_order_value: number
+  settled_orders: number
+  gross_settled_value: number
+  refunded_value: number
+  net_collected_value: number
+  avg_settled_order_value: number | null
 }
 
 const EMPTY_METRICS: AnalyticsMetrics = {
@@ -54,6 +59,11 @@ const EMPTY_METRICS: AnalyticsMetrics = {
   fulfillment_pickup: 0,
   fulfillment_dine_in: 0,
   gross_order_value: 0,
+  settled_orders: 0,
+  gross_settled_value: 0,
+  refunded_value: 0,
+  net_collected_value: 0,
+  avg_settled_order_value: null,
 }
 
 const ORDER_STATUS_ROWS: { label: string; key: keyof AnalyticsMetrics }[] = [
@@ -229,7 +239,7 @@ export default async function AdminAnalyticsPage({
         </p>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="text-sm text-zinc-600">Total orders</p>
           <p className="mt-1 font-display text-3xl font-bold text-foreground">
@@ -239,13 +249,49 @@ export default async function AdminAnalyticsPage({
 
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="text-sm text-zinc-600">
-            Gross order value (excl. cancelled)
+            Booked order value (excl. cancelled)
           </p>
           <p className="mt-1 font-display text-3xl font-bold text-foreground">
             {formatIDR(Number(metrics.gross_order_value))}
           </p>
         </div>
+
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <p className="text-sm text-zinc-600">Gross settled value</p>
+          <p className="mt-1 font-display text-3xl font-bold text-foreground">
+            {formatIDR(Number(metrics.gross_settled_value))}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <p className="text-sm text-zinc-600">Net collected value</p>
+          <p className="mt-1 font-display text-3xl font-bold text-foreground">
+            {formatIDR(Number(metrics.net_collected_value))}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <p className="text-sm text-zinc-600">Refunded value</p>
+          <p className="mt-1 font-display text-3xl font-bold text-foreground">
+            {formatIDR(Number(metrics.refunded_value))}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <p className="text-sm text-zinc-600">
+            Average settled order value
+          </p>
+          <p className="mt-1 font-display text-3xl font-bold text-foreground">
+            {metrics.avg_settled_order_value === null
+              ? '—'
+              : formatIDR(Number(metrics.avg_settled_order_value))}
+          </p>
+        </div>
       </section>
+
+      <p className="text-sm text-zinc-600">
+        Settled metrics are attributed to the order creation date ({timeZone}).
+      </p>
 
       {metrics.total_orders === 0 && (
         <EmptyState message="No orders in this range." />

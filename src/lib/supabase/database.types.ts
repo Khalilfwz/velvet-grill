@@ -1159,9 +1159,12 @@ export type Database = {
       admin_operational_analytics: {
         Args: { p_from?: string; p_to?: string }
         Returns: {
+          avg_settled_order_value: number
           fulfillment_dine_in: number
           fulfillment_pickup: number
           gross_order_value: number
+          gross_settled_value: number
+          net_collected_value: number
           orders_cancelled: number
           orders_completed: number
           orders_confirmed: number
@@ -1174,6 +1177,8 @@ export type Database = {
           payments_pending: number
           payments_refunded: number
           payments_unpaid: number
+          refunded_value: number
+          settled_orders: number
           total_orders: number
         }[]
       }
