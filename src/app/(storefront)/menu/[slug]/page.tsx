@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ProductOptions from '@/components/catalog/ProductOptions'
@@ -20,6 +21,31 @@ function formatReviewDate(value: string): string {
     dateStyle: 'medium',
     timeZone: 'Asia/Jakarta',
   }).format(new Date(value))
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = await createClient()
+
+  const { data: product } = await supabase
+    .from('products')
+    .select('name, description')
+    .eq('slug', slug)
+    .eq('is_available', true)
+    .maybeSingle()
+
+  if (!product) {
+    return {}
+  }
+
+  return {
+    title: product.name,
+    description: product.description?.slice(0, 160),
+  }
 }
 
 export default async function ProductPage({

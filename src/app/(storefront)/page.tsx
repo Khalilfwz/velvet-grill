@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ErrorState from '@/components/layout/ErrorState'
@@ -7,6 +8,12 @@ import {
   selectPrimaryImage,
 } from '@/lib/catalog/product-images'
 import { formatIDR } from '@/lib/format-currency'
+
+export const metadata: Metadata = {
+  title: 'Home',
+  description:
+    'Velvet Grill — Indonesian steakhouse serving premium steak, burgers, drinks, and desserts for pickup and dine-in.',
+}
 
 const focusClasses =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'

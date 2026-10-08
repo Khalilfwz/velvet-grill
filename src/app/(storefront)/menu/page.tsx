@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ReturnLink from '@/components/navigation/ReturnLink'
@@ -9,6 +10,12 @@ import {
   selectPrimaryImage,
 } from '@/lib/catalog/product-images'
 import { formatIDR } from '@/lib/format-currency'
+
+export const metadata: Metadata = {
+  title: 'Menu',
+  description:
+    'Browse the Velvet Grill menu — steak, burgers, drinks, and desserts, with options for pickup and dine-in orders.',
+}
 
 const focusClasses =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'

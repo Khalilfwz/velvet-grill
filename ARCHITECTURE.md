@@ -14,7 +14,6 @@ This document defines system boundaries and business-critical technical rules. P
 - Supabase Auth
 - Supabase Storage
 - Zod
-- React Hook Form
 - Lucide React
 - Git
 - GitHub

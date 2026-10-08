@@ -25,6 +25,7 @@ const supabaseStoragePattern = supabaseUrl
   : null;
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   images: supabaseStoragePattern
     ? {
         dangerouslyAllowLocalIP: isLoopbackSupabase,

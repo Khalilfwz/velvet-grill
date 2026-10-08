@@ -723,3 +723,98 @@ values
   0,
   true
 );
+
+-- ------------------------------------------------------------
+-- Demo accounts
+--
+-- STRICTLY LOCAL / DEMO ONLY. Provisioned only by this seed file
+-- for local development and portfolio review.
+-- Security requirement: do not execute this demo seed in production
+-- or shared environments, and never reuse these credentials —
+-- production/shared access must be provisioned through proper
+-- operator account management instead.
+--
+-- Passwords are bcrypt-hashed via pgcrypto and documented in
+-- README.md. The on_auth_user_created trigger (FR-07) provisions
+-- the matching public.profiles rows; the admin row is promoted
+-- to ADMIN below. auth.identities rows mirror what GoTrue writes
+-- for email/password signups. UUIDs use the a0000000- family and
+-- emails the velvetgrill.test domain so they never collide with
+-- pgTAP fixtures (@test.local) or catalog seeds (10000000- …).
+-- ------------------------------------------------------------
+
+insert into auth.users (
+  instance_id,
+  id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+)
+values
+(
+  '00000000-0000-0000-0000-000000000000',
+  'a0000000-0000-4000-8000-000000000001',
+  'authenticated',
+  'authenticated',
+  'demo@velvetgrill.test',
+  extensions.crypt('velvet-demo-2026', extensions.gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  '{}',
+  now(),
+  now()
+),
+(
+  '00000000-0000-0000-0000-000000000000',
+  'a0000000-0000-4000-8000-000000000002',
+  'authenticated',
+  'authenticated',
+  'admin@velvetgrill.test',
+  extensions.crypt('velvet-admin-2026', extensions.gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  '{}',
+  now(),
+  now()
+);
+
+insert into auth.identities (
+  provider_id,
+  user_id,
+  identity_data,
+  provider,
+  last_sign_in_at,
+  created_at,
+  updated_at
+)
+select
+  u.email,
+  u.id,
+  jsonb_build_object(
+    'sub', u.id::text,
+    'email', u.email,
+    'email_verified', true
+  ),
+  'email',
+  u.created_at,
+  u.created_at,
+  u.created_at
+from auth.users u
+where u.email in ('demo@velvetgrill.test', 'admin@velvetgrill.test');
+
+-- Profile display names + the demo admin role grant. Customers
+-- cannot self-promote (FR-08); this is the documented local
+-- development equivalent of an operator granting the role.
+update public.profiles
+set full_name = 'Demo Customer'
+where id = 'a0000000-0000-4000-8000-000000000001';
+
+update public.profiles
+set role = 'ADMIN', full_name = 'Demo Admin'
+where id = 'a0000000-0000-4000-8000-000000000002';
