@@ -102,8 +102,8 @@ export default async function NotificationsPage() {
                   notification.is_read ? '' : 'border-l-4 border-l-brand'
                 }`}
               >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       {notification.order_id ? (
                         <ReturnLink
