@@ -28,7 +28,7 @@ lifecycle).
 | `npm run typecheck` | no errors |
 | `npm run build` | build completes, no type errors |
 | `git diff --check` | no whitespace/conflict-marker issues |
-| `npm run test:db` | all pgTAP suites pass (34 files) |
+| `npm run test:db` | all pgTAP suites pass (35 files) |
 | `bash supabase/scripts/stock_oversell_check.sh` | no oversell (FR-21 race proof) |
 | `bash supabase/scripts/fr31_expiry_race_check.sh` | expiry path deterministic (FR-31 race proof) |
 

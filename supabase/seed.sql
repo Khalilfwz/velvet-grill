@@ -738,7 +738,13 @@ values
 -- README.md. The on_auth_user_created trigger (FR-07) provisions
 -- the matching public.profiles rows; the admin row is promoted
 -- to ADMIN below. auth.identities rows mirror what GoTrue writes
--- for email/password signups. UUIDs use the a0000000- family and
+-- for email/password signups. GoTrue reads the auth.users token
+-- string columns (confirmation_token, recovery_token, email_change,
+-- email_change_token_new) as non-nullable strings during sign-in:
+-- NULL breaks password grants with HTTP 500 "converting NULL to
+-- string is unsupported" and those columns have no defaults, so the
+-- seed writes '' (what GoTrue itself stores on signup), never NULL.
+-- UUIDs use the a0000000- family and
 -- emails the velvetgrill.test domain so they never collide with
 -- pgTAP fixtures (@test.local) or catalog seeds (10000000- …).
 -- ------------------------------------------------------------
@@ -751,6 +757,10 @@ insert into auth.users (
   email,
   encrypted_password,
   email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change,
+  email_change_token_new,
   raw_app_meta_data,
   raw_user_meta_data,
   created_at,
@@ -765,6 +775,10 @@ values
   'demo@velvetgrill.test',
   extensions.crypt('velvet-demo-2026', extensions.gen_salt('bf')),
   now(),
+  '',
+  '',
+  '',
+  '',
   '{"provider":"email","providers":["email"]}',
   '{}',
   now(),
@@ -778,6 +792,10 @@ values
   'admin@velvetgrill.test',
   extensions.crypt('velvet-admin-2026', extensions.gen_salt('bf')),
   now(),
+  '',
+  '',
+  '',
+  '',
   '{"provider":"email","providers":["email"]}',
   '{}',
   now(),
