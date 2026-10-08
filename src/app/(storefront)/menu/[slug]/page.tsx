@@ -112,7 +112,7 @@ export default async function ProductPage({
         <BackLink
           route="menu-product"
           from={from}
-          className="text-sm font-medium text-brand transition-colors hover:text-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="inline-flex items-center rounded-full border border-brand px-5 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         />
 
         <div className="mt-6 grid gap-10 lg:grid-cols-12">

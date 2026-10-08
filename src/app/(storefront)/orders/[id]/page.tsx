@@ -290,7 +290,7 @@ export default async function OrderPage({
         <BackLink
           route="order-detail"
           from={from}
-          className={`mt-8 inline-block rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light ${focusClasses}`}
+          className={`mt-8 inline-flex items-center rounded-full border border-brand px-5 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/5 ${focusClasses}`}
         />
       </div>
     </main>

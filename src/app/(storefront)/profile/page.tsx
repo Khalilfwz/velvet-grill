@@ -137,7 +137,7 @@ export default async function ProfilePage({
           {isCustomer && (
             <Link
               href="/orders"
-              className={`inline-block text-sm font-medium text-brand transition-colors hover:text-brand-light ${focusClasses}`}
+              className={`inline-flex items-center rounded-full border border-brand px-5 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/5 ${focusClasses}`}
             >
               View my orders
             </Link>

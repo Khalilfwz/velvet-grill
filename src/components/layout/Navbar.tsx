@@ -9,7 +9,7 @@ const focusClasses =
 
 const loginLinkClasses = `rounded-full bg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-light ${focusClasses}`
 
-const signOutButtonClasses = `text-sm font-medium text-zinc-600 transition-colors hover:text-brand ${focusClasses}`
+const signOutButtonClasses = `rounded-full border border-brand px-4 py-1.5 text-sm font-medium text-brand transition-colors hover:bg-brand/5 ${focusClasses}`
 
 const navLinkClasses = `text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`
 
@@ -262,7 +262,7 @@ export default async function Navbar() {
 
                 <form action={signOut}>
                   <SignOutButton
-                    className={`block w-full rounded-lg border border-border px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-background ${focusClasses}`}
+                    className={`block w-full rounded-lg border border-brand px-3 py-2 text-left text-sm font-medium text-brand hover:bg-brand/5 ${focusClasses}`}
                   />
                 </form>
               </>

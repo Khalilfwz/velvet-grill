@@ -13,6 +13,8 @@ const focusClasses =
 
 const ghostLinkClasses = `inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-brand ${focusClasses}`
 
+const heroSecondaryCtaClasses = `inline-flex items-center rounded-full border border-brand px-6 py-3 text-sm font-medium text-brand transition-colors hover:bg-brand/5 ${focusClasses}`
+
 const DAY_LABELS = [
   'Sunday',
   'Monday',
@@ -213,13 +215,13 @@ export default async function Home() {
               </Link>
 
               {!isAuthenticated && (
-                <Link href="/login" className={ghostLinkClasses}>
+                <Link href="/login" className={heroSecondaryCtaClasses}>
                   Sign in
                 </Link>
               )}
 
               {isAuthenticated && !isAdmin && (
-                <Link href="/orders" className={ghostLinkClasses}>
+                <Link href="/orders" className={heroSecondaryCtaClasses}>
                   View my orders
                 </Link>
               )}
