@@ -184,12 +184,14 @@ export default async function OrderPage({
           )}
 
           {/* Offer a payment action only when the order and the single payment
-              row agree on the state; inconsistent state is left untouched. */}
+              row agree on the state; inconsistent or cancelled state (FR-33:
+              cancelled is terminal) shows no action. */}
           {payment &&
             (payment.method === 'DUMMY_QRIS' ||
               payment.method === 'DUMMY_BANK_TRANSFER') &&
             payment.status === 'PENDING' &&
-            order.payment_status === 'PENDING' && (
+            order.payment_status === 'PENDING' &&
+            order.order_status !== 'CANCELLED' && (
               <ConfirmPaymentButton orderId={order.id} />
             )}
 

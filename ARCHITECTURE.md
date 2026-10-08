@@ -235,6 +235,16 @@ Cash:
 - Cash payment becomes `PAID` when payment is confirmed at fulfillment.
 - Cash orders do not use digital payment states such as `PENDING`, `FAILED`, or `EXPIRED`.
 
+### Lifecycle consistency notes (FR-33)
+
+- A `CANCELLED` order is terminal for payment confirmation: `confirm_order_payment` rejects any call on a `CANCELLED` order with 42501 and no writes, including a replay of an already-`PAID` pair. This is a deliberate contract change; money taken on a cancelled order is recovered through the full-refund action instead.
+- Payment confirmation idempotency is unchanged on non-cancelled orders: an already-`PAID` replay returns `PAID` and writes nothing.
+- `FAILED` remains an enum placeholder that no writer produces: dummy digital payments do not fail; they either confirm (`PAID`) or time out into the expiry path below.
+- Automatic expiry is the only path that cancels an order by itself: it atomically pairs `payments.status = EXPIRED` with `orders.payment_status = EXPIRED` and `order_status = CANCELLED`, releases the order's coupon usages, and restores reserved stock.
+- Manual admin cancellation deliberately leaves payment state untouched and releases neither coupon usage nor stock (frozen FR-31 policy; release is the automatic expiry path's job).
+- Refunds are admin-only, full, and never change `order_status`: `REFUNDED` can only pair with `CANCELLED` or `COMPLETED`; coupon usage stays consumed and no stock is refilled.
+- The payment/order representation pairing rules and the FR-32 booked/settled metric semantics are documented in the migration and analytics `COMMENT` blocks.
+
 ## 11. Dine-In Table Context
 
 Recommended UX:
