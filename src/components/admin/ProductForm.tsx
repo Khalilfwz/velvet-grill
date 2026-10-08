@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useId } from 'react'
+import { useActionState, useState, useId } from 'react'
+import { useFormStatus } from 'react-dom'
 import { saveProduct, type AdminActionState } from '@/lib/admin/actions'
 import SubmitButton from './SubmitButton'
 
@@ -27,6 +28,20 @@ export type ProductFormInitial = {
 
 const initialState: AdminActionState = { error: null }
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return (
+    <p role="status" className="text-sm text-brand">
+      Saved.
+    </p>
+  )
+}
+
 export default function ProductForm({
   categories,
   initial,
@@ -36,9 +51,19 @@ export default function ProductForm({
 }) {
   const uid = useId()
   const [state, formAction] = useActionState(saveProduct, initialState)
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmit(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form
+      action={handleSubmit}
+      onChange={() => setDirty(true)}
+      className="space-y-4"
+    >
       {initial && (
         <>
           <input type="hidden" name="id" value={initial.id} />
@@ -148,6 +173,7 @@ export default function ProductForm({
             type="checkbox"
             name="isAvailable"
             defaultChecked={initial?.isAvailable ?? true}
+            className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           />
           Available
         </label>
@@ -157,6 +183,7 @@ export default function ProductForm({
             type="checkbox"
             name="isFeatured"
             defaultChecked={initial?.isFeatured ?? false}
+            className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           />
           Featured
         </label>
@@ -167,6 +194,8 @@ export default function ProductForm({
           {state.error}
         </p>
       )}
+
+      <SavedNote saved={state.saved ?? false} dirty={dirty} />
 
       <SubmitButton
         label={initial ? 'Save product' : 'Create product'}

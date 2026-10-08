@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useId } from 'react'
+import { useActionState, useState, useId } from 'react'
+import { useFormStatus } from 'react-dom'
 import { saveOptionGroup, type AdminActionState } from '@/lib/admin/actions'
 import SubmitButton from './SubmitButton'
 
@@ -21,6 +22,20 @@ export type OptionGroupInitial = {
 
 const initialState: AdminActionState = { error: null }
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return (
+    <p role="status" className="text-sm text-brand">
+      Saved.
+    </p>
+  )
+}
+
 export default function OptionGroupForm({
   productId,
   productSlug,
@@ -32,9 +47,19 @@ export default function OptionGroupForm({
 }) {
   const uid = useId()
   const [state, formAction] = useActionState(saveOptionGroup, initialState)
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmit(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
 
   return (
-    <form action={formAction} className="space-y-3">
+    <form
+      action={handleSubmit}
+      onChange={() => setDirty(true)}
+      className="space-y-3"
+    >
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="productSlug" value={productSlug} />
       {initial && <input type="hidden" name="id" value={initial.id} />}
@@ -120,6 +145,7 @@ export default function OptionGroupForm({
             type="checkbox"
             name="isRequired"
             defaultChecked={initial?.isRequired ?? false}
+            className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           />
           Required
         </label>
@@ -129,6 +155,7 @@ export default function OptionGroupForm({
             type="checkbox"
             name="isActive"
             defaultChecked={initial?.isActive ?? true}
+            className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           />
           Active
         </label>
@@ -139,6 +166,8 @@ export default function OptionGroupForm({
           {state.error}
         </p>
       )}
+
+      <SavedNote saved={state.saved ?? false} dirty={dirty} />
 
       <SubmitButton
         label={initial ? 'Save group' : 'Add group'}

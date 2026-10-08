@@ -80,16 +80,26 @@ export default async function AdminProductsPage() {
           <EmptyState message="No products yet." />
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <div className="overflow-x-auto">
+            <div
+              role="region"
+              aria-label="Products"
+              tabIndex={0}
+              className="overflow-x-auto focus-visible:outline-2 -outline-offset-2 focus-visible:outline-brand"
+            >
               <table className="w-full min-w-[640px] text-left text-sm">
+                <caption className="sr-only">
+                  Product catalog with stock, availability, and edit links.
+                </caption>
                 <thead className="border-b border-border text-zinc-600">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Name</th>
-                    <th className="px-4 py-3 font-medium">Category</th>
-                    <th className="px-4 py-3 font-medium">Price</th>
-                    <th className="px-4 py-3 font-medium">Stock</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3" />
+                    <th scope="col" className="px-4 py-3 font-medium">Name</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Category</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Price</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Stock</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                    <th scope="col" className="px-4 py-3">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

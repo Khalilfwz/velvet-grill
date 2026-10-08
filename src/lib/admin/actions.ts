@@ -19,8 +19,11 @@ import {
   isUuid,
 } from '@/lib/admin/schemas'
 
+// Display-only UI flag: `saved` is set by success returns so client forms can
+// render success feedback. It never carries business state.
 export type AdminActionState = {
   error: string | null
+  saved?: boolean
 }
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.'
@@ -149,7 +152,7 @@ export async function saveCategory(
   revalidatePath('/admin/categories')
   revalidatePath('/admin/products')
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function saveProduct(
@@ -223,7 +226,7 @@ export async function saveProduct(
     redirect(`/admin/products/${newId}`)
   }
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function saveProductImage(
@@ -272,7 +275,7 @@ export async function saveProductImage(
   revalidateCatalog(str(formData.get('productSlug')).trim() || undefined)
   revalidatePath(`/admin/products/${productId}`)
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function deleteProductImage(
@@ -306,7 +309,7 @@ export async function deleteProductImage(
   revalidateCatalog(str(formData.get('productSlug')).trim() || undefined)
   revalidatePath(`/admin/products/${productId}`)
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function saveOptionGroup(
@@ -361,7 +364,7 @@ export async function saveOptionGroup(
   revalidateCatalog(str(formData.get('productSlug')).trim() || undefined)
   revalidatePath(`/admin/products/${productId}`)
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function saveOption(
@@ -412,7 +415,7 @@ export async function saveOption(
   revalidateCatalog(str(formData.get('productSlug')).trim() || undefined)
   revalidatePath(`/admin/products/${productId}`)
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function saveRestaurantTable(
@@ -459,7 +462,7 @@ export async function saveRestaurantTable(
   revalidatePath('/admin/tables')
   revalidatePath('/checkout')
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function saveBusinessHours(
@@ -498,7 +501,7 @@ export async function saveBusinessHours(
 
   revalidatePath('/admin/hours')
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function saveRestaurantSettings(
@@ -537,7 +540,7 @@ export async function saveRestaurantSettings(
 
   revalidatePath('/admin/settings')
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function updateOrderStatus(
@@ -591,7 +594,7 @@ export async function updateOrderStatus(
   revalidatePath('/admin/orders')
   revalidatePath(`/orders/${parsed.data.orderId}`)
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function confirmCashPayment(
@@ -642,7 +645,7 @@ export async function confirmCashPayment(
   revalidatePath('/admin/orders')
   revalidatePath(`/orders/${orderId}`)
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function refundOrderPayment(
@@ -696,7 +699,7 @@ export async function refundOrderPayment(
   revalidatePath('/admin/orders')
   revalidatePath(`/orders/${parsed.data.orderId}`)
 
-  return { error: null }
+  return { error: null, saved: true }
 }
 
 export async function moderateReview(
@@ -731,5 +734,5 @@ export async function moderateReview(
 
   revalidatePath('/admin/reviews')
 
-  return { error: null }
+  return { error: null, saved: true }
 }

@@ -6,6 +6,7 @@ import {
   useId,
   type FormEvent,
 } from 'react'
+import { useFormStatus } from 'react-dom'
 import {
   saveProductImage,
   deleteProductImage,
@@ -34,6 +35,20 @@ const initialState: AdminActionState = { error: null }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return (
+    <p role="status" className="text-sm text-brand">
+      Saved.
+    </p>
+  )
+}
+
 export default function ProductImageForm({
   productId,
   productSlug,
@@ -52,6 +67,17 @@ export default function ProductImageForm({
     initialState
   )
   const [pathDraft, setPathDraft] = useState(initial?.storagePath ?? '')
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmitSave(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
+
+  function handleSubmitDelete(formData: FormData) {
+    setDirty(false)
+    deleteAction(formData)
+  }
 
   const trimmedPath = pathDraft.trim()
   const previewSrc = trimmedPath
@@ -76,7 +102,8 @@ export default function ProductImageForm({
       )}
 
       <form
-        action={formAction}
+        action={handleSubmitSave}
+        onChange={() => setDirty(true)}
         className="grid gap-4 sm:grid-cols-[200px_1fr]"
       >
         <input type="hidden" name="productId" value={productId} />
@@ -128,6 +155,7 @@ export default function ProductImageForm({
                 type="checkbox"
                 name="isPrimary"
                 defaultChecked={initial?.isPrimary ?? false}
+                className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               />
               Primary image
             </label>
@@ -158,6 +186,11 @@ export default function ProductImageForm({
             </p>
           )}
 
+          <SavedNote
+            saved={(state.saved ?? false) || (deleteState.saved ?? false)}
+            dirty={dirty}
+          />
+
           <div>
             <SubmitButton
               label={initial ? 'Save image' : 'Add image'}
@@ -169,7 +202,7 @@ export default function ProductImageForm({
 
       {initial && (
         <div className="flex justify-end border-t border-border pt-3">
-          <form action={deleteAction} onSubmit={confirmDelete}>
+          <form action={handleSubmitDelete} onSubmit={confirmDelete}>
             <input type="hidden" name="id" value={initial.id} />
             <input type="hidden" name="productId" value={productId} />
             <input type="hidden" name="productSlug" value={productSlug} />

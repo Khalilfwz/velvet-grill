@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useId } from 'react'
+import { useActionState, useState, useId } from 'react'
+import { useFormStatus } from 'react-dom'
 import { saveOption, type AdminActionState } from '@/lib/admin/actions'
 import SubmitButton from './SubmitButton'
 
@@ -18,6 +19,20 @@ export type OptionInitial = {
 
 const initialState: AdminActionState = { error: null }
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return (
+    <p role="status" className="text-sm text-brand">
+      Saved.
+    </p>
+  )
+}
+
 export default function OptionForm({
   productId,
   productSlug,
@@ -31,9 +46,19 @@ export default function OptionForm({
 }) {
   const uid = useId()
   const [state, formAction] = useActionState(saveOption, initialState)
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmit(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
 
   return (
-    <form action={formAction} className="space-y-3">
+    <form
+      action={handleSubmit}
+      onChange={() => setDirty(true)}
+      className="space-y-3"
+    >
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="productSlug" value={productSlug} />
       <input type="hidden" name="groupId" value={groupId} />
@@ -89,6 +114,7 @@ export default function OptionForm({
             type="checkbox"
             name="isAvailable"
             defaultChecked={initial?.isAvailable ?? true}
+            className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           />
           Available
         </label>
@@ -99,6 +125,8 @@ export default function OptionForm({
           {state.error}
         </p>
       )}
+
+      <SavedNote saved={state.saved ?? false} dirty={dirty} />
 
       <SubmitButton
         label={initial ? 'Save option' : 'Add option'}

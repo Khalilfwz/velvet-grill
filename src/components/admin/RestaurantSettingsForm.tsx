@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useId } from 'react'
+import { useActionState, useState, useId } from 'react'
+import { useFormStatus } from 'react-dom'
 import {
   saveRestaurantSettings,
   type AdminActionState,
@@ -19,6 +20,20 @@ export type RestaurantSettingsFormInitial = {
 
 const initialState: AdminActionState = { error: null }
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return (
+    <p role="status" className="text-sm text-brand">
+      Saved.
+    </p>
+  )
+}
+
 export default function RestaurantSettingsForm({
   initial,
 }: {
@@ -29,9 +44,19 @@ export default function RestaurantSettingsForm({
     saveRestaurantSettings,
     initialState
   )
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmit(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form
+      action={handleSubmit}
+      onChange={() => setDirty(true)}
+      className="space-y-6"
+    >
       <fieldset className="space-y-4">
         <legend className={groupClasses}>Restaurant</legend>
 
@@ -106,6 +131,8 @@ export default function RestaurantSettingsForm({
           {state.error}
         </p>
       )}
+
+      <SavedNote saved={state.saved ?? false} dirty={dirty} />
 
       <SubmitButton label="Save settings" pendingLabel="Saving…" />
     </form>

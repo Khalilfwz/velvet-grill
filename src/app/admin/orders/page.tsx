@@ -126,17 +126,26 @@ export default async function AdminOrdersPage({
           />
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <div className="overflow-x-auto">
+            <div
+              role="region"
+              aria-label="Orders"
+              tabIndex={0}
+              className="overflow-x-auto focus-visible:outline-2 -outline-offset-2 focus-visible:outline-brand"
+            >
               <table className="w-full min-w-[880px] text-left text-sm">
+                <caption className="sr-only">
+                  Order queue with fulfillment, payment, status, and per-row
+                  status actions.
+                </caption>
                 <thead className="border-b border-border text-zinc-600">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Order</th>
-                    <th className="px-4 py-3 font-medium">Fulfillment</th>
-                    <th className="px-4 py-3 font-medium">Total</th>
-                    <th className="px-4 py-3 font-medium">Payment</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Created</th>
-                    <th className="px-4 py-3 font-medium">Update</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Order</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Fulfillment</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Total</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Payment</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Created</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Update</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -211,13 +220,20 @@ export default async function AdminOrdersPage({
                         <td className="px-4 py-3">
                           <div className="space-y-2">
                             {canConfirmCash && (
-                              <ConfirmCashPaymentButton orderId={order.id} />
+                              <ConfirmCashPaymentButton
+                                orderId={order.id}
+                                orderNumber={order.order_number}
+                              />
                             )}
                             {canRefundPayment && (
-                              <RefundPaymentButton orderId={order.id} />
+                              <RefundPaymentButton
+                                orderId={order.id}
+                                orderNumber={order.order_number}
+                              />
                             )}
                             <OrderStatusForm
                               orderId={order.id}
+                              orderNumber={order.order_number}
                               currentStatus={order.order_status}
                               allowedTransitions={nextOrderStatusesForOrder(
                                 order.order_status,

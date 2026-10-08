@@ -125,17 +125,26 @@ export default async function AdminReviewsPage({
           />
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <div className="overflow-x-auto">
+            <div
+              role="region"
+              aria-label="Reviews"
+              tabIndex={0}
+              className="overflow-x-auto focus-visible:outline-2 -outline-offset-2 focus-visible:outline-brand"
+            >
               <table className="w-full min-w-[760px] text-left text-sm">
+                <caption className="sr-only">
+                  Customer reviews with moderation status and hide or publish
+                  actions.
+                </caption>
                 <thead className="border-b border-border text-zinc-600">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Author</th>
-                    <th className="px-4 py-3 font-medium">Rating</th>
-                    <th className="px-4 py-3 font-medium">Review</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Created</th>
-                    <th className="px-4 py-3 font-medium">Moderate</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Product</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Author</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Rating</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Review</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Created</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Moderate</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -159,7 +168,18 @@ export default async function AdminReviewsPage({
                             {review.title}
                           </span>
                         )}
-                        {excerpt(review.content)}
+                        {review.content && review.content.length > 120 ? (
+                          <details>
+                            <summary className="cursor-pointer underline decoration-border underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                              {excerpt(review.content)}
+                            </summary>
+                            <p className="mt-2 whitespace-pre-wrap">
+                              {review.content}
+                            </p>
+                          </details>
+                        ) : (
+                          excerpt(review.content)
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge
@@ -173,6 +193,7 @@ export default async function AdminReviewsPage({
                       <td className="px-4 py-3">
                         <ReviewModerationForm
                           reviewId={review.id}
+                          reviewTitle={review.title}
                           status={review.status}
                         />
                       </td>

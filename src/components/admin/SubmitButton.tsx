@@ -8,6 +8,7 @@ type SubmitButtonProps = {
   variant?: 'default' | 'danger'
   size?: 'default' | 'compact'
   className?: string
+  ariaLabel?: string
 }
 
 const baseClasses =
@@ -29,6 +30,7 @@ export default function SubmitButton({
   variant = 'default',
   size = 'default',
   className = '',
+  ariaLabel,
 }: SubmitButtonProps) {
   const { pending } = useFormStatus()
 
@@ -36,6 +38,7 @@ export default function SubmitButton({
     <button
       type="submit"
       disabled={pending}
+      aria-label={ariaLabel}
       className={`${baseClasses} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
     >
       {pending ? (pendingLabel ?? label) : label}

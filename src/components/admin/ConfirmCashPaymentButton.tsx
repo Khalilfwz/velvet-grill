@@ -8,8 +8,10 @@ const initialState: AdminActionState = { error: null }
 
 export default function ConfirmCashPaymentButton({
   orderId,
+  orderNumber,
 }: {
   orderId: string
+  orderNumber?: string
 }) {
   const [state, formAction] = useActionState(confirmCashPayment, initialState)
 
@@ -25,7 +27,13 @@ export default function ConfirmCashPaymentButton({
         </p>
       )}
 
-      <SubmitButton label="Confirm cash payment" pendingLabel="Confirming…" />
+      <SubmitButton
+        label="Confirm cash payment"
+        pendingLabel="Confirming…"
+        ariaLabel={
+          orderNumber ? `Confirm cash payment for ${orderNumber}` : undefined
+        }
+      />
     </form>
   )
 }

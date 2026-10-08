@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useRef } from 'react'
 import { Menu } from 'lucide-react'
 import { signOut } from '@/lib/auth/actions'
+import SignOutButton from '@/components/auth/SignOutButton'
 
 const NAV_GROUPS = [
   {
@@ -60,6 +62,41 @@ function drawerLinkClasses(active: boolean): string {
 
 export default function AdminNav() {
   const pathname = usePathname()
+  const menuRef = useRef<HTMLDetailsElement>(null)
+  const previousPathname = useRef(pathname)
+
+  useEffect(() => {
+    if (pathname !== previousPathname.current) {
+      previousPathname.current = pathname
+      menuRef.current?.removeAttribute('open')
+    }
+  }, [pathname])
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        menuRef.current?.removeAttribute('open')
+      }
+    }
+
+    function closeOutside(event: PointerEvent) {
+      if (
+        menuRef.current?.open &&
+        event.target instanceof Node &&
+        !menuRef.current.contains(event.target)
+      ) {
+        menuRef.current.removeAttribute('open')
+      }
+    }
+
+    document.addEventListener('keydown', closeOnEscape)
+    document.addEventListener('pointerdown', closeOutside)
+
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape)
+      document.removeEventListener('pointerdown', closeOutside)
+    }
+  }, [])
 
   return (
     <>
@@ -90,9 +127,9 @@ export default function AdminNav() {
         ))}
       </nav>
 
-      <details className="relative md:hidden">
+      <details ref={menuRef} className="relative md:hidden">
         <summary
-          aria-label="Open admin menu"
+          aria-label="Admin menu"
           className={`flex cursor-pointer list-none items-center justify-center rounded-md p-2 text-foreground ${focusClasses}`}
         >
           <Menu size={20} aria-hidden="true" />
@@ -130,12 +167,9 @@ export default function AdminNav() {
             </Link>
 
             <form action={signOut}>
-              <button
-                type="submit"
+              <SignOutButton
                 className={`block w-full rounded-lg border border-border px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-background ${focusClasses}`}
-              >
-                Sign out
-              </button>
+              />
             </form>
           </div>
         </div>

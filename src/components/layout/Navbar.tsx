@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Bell, Heart, Menu as MenuIcon, ShoppingCart, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/auth/actions'
+import SignOutButton from '@/components/auth/SignOutButton'
 
 const focusClasses =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
@@ -166,9 +167,7 @@ export default async function Navbar() {
               </span>
 
               <form action={signOut}>
-                <button type="submit" className={signOutButtonClasses}>
-                  Sign out
-                </button>
+                <SignOutButton className={signOutButtonClasses} />
               </form>
             </div>
           ) : (
@@ -262,12 +261,9 @@ export default async function Navbar() {
                 </p>
 
                 <form action={signOut}>
-                  <button
-                    type="submit"
+                  <SignOutButton
                     className={`block w-full rounded-lg border border-border px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-background ${focusClasses}`}
-                  >
-                    Sign out
-                  </button>
+                  />
                 </form>
               </>
             ) : (

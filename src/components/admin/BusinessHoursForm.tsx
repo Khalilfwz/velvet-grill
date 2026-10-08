@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useId, useRef, useState } from 'react'
+import { useActionState, useState, useId, useRef } from 'react'
+import { useFormStatus } from 'react-dom'
 import { saveBusinessHours, type AdminActionState } from '@/lib/admin/actions'
 import SubmitButton from './SubmitButton'
 
@@ -26,6 +27,20 @@ function timeState(isClosed: boolean, value: string | null): string {
   return isClosed ? '' : toTimeInput(value)
 }
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return (
+    <p role="status" className="text-sm text-brand">
+      Saved.
+    </p>
+  )
+}
+
 /**
  * Edit state is seeded from the persisted props. The parent gives this component
  * a key derived from the persisted row, so a successful save (which revalidates
@@ -47,6 +62,12 @@ export default function BusinessHoursForm({
   } = initial
 
   const [state, formAction] = useActionState(saveBusinessHours, initialState)
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmit(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
 
   const [isClosed, setIsClosed] = useState(persistedClosed)
   const [opensAt, setOpensAt] = useState(
@@ -77,7 +98,11 @@ export default function BusinessHoursForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form
+      action={handleSubmit}
+      onChange={() => setDirty(true)}
+      className="space-y-4"
+    >
       <input type="hidden" name="dayOfWeek" value={dayOfWeek} />
 
       <div className="flex flex-wrap gap-6">
@@ -120,6 +145,7 @@ export default function BusinessHoursForm({
           name="isClosed"
           checked={isClosed}
           onChange={(event) => handleClosedChange(event.target.checked)}
+          className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         />
         Closed
       </label>
@@ -129,6 +155,8 @@ export default function BusinessHoursForm({
           {state.error}
         </p>
       )}
+
+      <SavedNote saved={state.saved ?? false} dirty={dirty} />
 
       <SubmitButton label="Save hours" pendingLabel="Saving…" />
     </form>

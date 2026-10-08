@@ -127,16 +127,24 @@ export default async function AdminAuditPage({
           />
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <div className="overflow-x-auto">
+            <div
+              role="region"
+              aria-label="Audit log"
+              tabIndex={0}
+              className="overflow-x-auto focus-visible:outline-2 -outline-offset-2 focus-visible:outline-brand"
+            >
               <table className="w-full min-w-[860px] text-left text-sm">
+                <caption className="sr-only">
+                  Audit log entries, newest first; metadata expands per row.
+                </caption>
                 <thead className="border-b border-border text-zinc-600">
                   <tr>
-                    <th className="px-4 py-3 font-medium">When</th>
-                    <th className="px-4 py-3 font-medium">Actor</th>
-                    <th className="px-4 py-3 font-medium">Action</th>
-                    <th className="px-4 py-3 font-medium">Entity</th>
-                    <th className="px-4 py-3 font-medium">Entity id</th>
-                    <th className="px-4 py-3 font-medium">Metadata</th>
+                    <th scope="col" className="px-4 py-3 font-medium">When</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Actor</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Action</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Entity</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Entity id</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Metadata</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,7 +179,10 @@ export default async function AdminAuditPage({
                       </td>
                       <td className="px-4 py-3 text-zinc-600">
                         <details>
-                          <summary className="cursor-pointer font-medium text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                          <summary
+                            aria-label={`View change for ${log.action} ${entityLabel(log.entity_type)}`}
+                            className="cursor-pointer font-medium text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                          >
                             View
                           </summary>
                           <div className="mt-2 grid gap-3 sm:grid-cols-2">

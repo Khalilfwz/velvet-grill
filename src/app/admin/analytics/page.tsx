@@ -107,9 +107,15 @@ function BreakdownTable({
           </caption>
           <thead className="border-b border-border text-zinc-600">
             <tr>
-              <th className="px-4 py-3 font-medium">{labelHeader}</th>
-              <th className="px-4 py-3 text-right font-medium">Orders</th>
-              <th className="px-4 py-3 text-right font-medium">Share</th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                {labelHeader}
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Orders
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Share
+              </th>
             </tr>
           </thead>
           <tbody>

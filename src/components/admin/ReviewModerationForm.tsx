@@ -11,15 +11,18 @@ const initialState: AdminActionState = { error: null }
 
 export default function ReviewModerationForm({
   reviewId,
+  reviewTitle,
   status,
 }: {
   reviewId: string
+  reviewTitle?: string | null
   status: ReviewStatus
 }) {
   const [state, formAction] = useActionState(moderateReview, initialState)
   const nextStatus: ReviewStatus =
     status === 'PUBLISHED' ? 'HIDDEN' : 'PUBLISHED'
   const isHiding = nextStatus === 'HIDDEN'
+  const actionLabel = isHiding ? 'Hide review' : 'Publish review'
 
   return (
     <form action={formAction} className="space-y-2">
@@ -33,10 +36,13 @@ export default function ReviewModerationForm({
       )}
 
       <SubmitButton
-        label={isHiding ? 'Hide review' : 'Publish review'}
+        label={actionLabel}
         pendingLabel={isHiding ? 'Hiding…' : 'Publishing…'}
         variant={isHiding ? 'danger' : 'default'}
         size="compact"
+        ariaLabel={
+          reviewTitle ? `${actionLabel} — ${reviewTitle}` : undefined
+        }
       />
     </form>
   )

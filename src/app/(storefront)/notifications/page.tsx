@@ -120,10 +120,7 @@ export default async function NotificationsPage() {
                       )}
 
                       {!notification.is_read && (
-                        <span
-                          className="rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-white"
-                          aria-label="Unread notification"
-                        >
+                        <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-white">
                           Unread
                         </span>
                       )}

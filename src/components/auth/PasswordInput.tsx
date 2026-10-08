@@ -37,6 +37,14 @@ export default function PasswordInput({
 }: PasswordInputProps) {
   const [visible, setVisible] = useState(false)
 
+  const hintId = hint ? `${id}-hint` : undefined
+  const describedBy = [
+    hasError && errorId ? errorId : undefined,
+    hintId,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div>
       <label htmlFor={id} className={labelClasses}>
@@ -53,7 +61,7 @@ export default function PasswordInput({
           minLength={minLength}
           defaultValue={defaultValue}
           aria-invalid={hasError ? true : undefined}
-          aria-describedby={hasError && errorId ? errorId : undefined}
+          aria-describedby={describedBy || undefined}
           className={inputClasses}
         />
 
@@ -72,7 +80,11 @@ export default function PasswordInput({
         </button>
       </div>
 
-      {hint && <p className="mt-1 text-sm text-zinc-600">{hint}</p>}
+      {hint && (
+        <p id={hintId} className="mt-1 text-sm text-zinc-600">
+          {hint}
+        </p>
+      )}
     </div>
   )
 }

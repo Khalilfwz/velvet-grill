@@ -113,7 +113,7 @@ export default function AvatarForm({ avatarUrl }: AvatarFormProps) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center text-xs text-zinc-500">
+            <span className="flex h-full w-full items-center justify-center text-xs text-zinc-600">
               No photo
             </span>
           )}

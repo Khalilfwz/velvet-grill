@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireAdminPage } from '@/lib/admin/guard'
 import { signOut } from '@/lib/auth/actions'
+import SignOutButton from '@/components/auth/SignOutButton'
 import AdminNav from '@/components/admin/AdminNav'
 
 export const metadata = {
@@ -19,6 +20,13 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-background">
+      <a
+        href="#main-content"
+        className={`sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:border focus:border-border focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-sm ${focusClasses}`}
+      >
+        Skip to content
+      </a>
+
       <div className="border-b border-border bg-surface">
         <nav className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
           <span className="font-display text-xl font-semibold text-brand">
@@ -38,18 +46,21 @@ export default async function AdminLayout({
             </Link>
 
             <form action={signOut}>
-              <button
-                type="submit"
+              <SignOutButton
                 className={`rounded-full border border-border px-4 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-brand hover:text-brand ${focusClasses}`}
-              >
-                Sign out
-              </button>
+              />
             </form>
           </div>
         </nav>
       </div>
 
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto max-w-6xl px-6 py-8 outline-none"
+      >
+        {children}
+      </main>
     </div>
   )
 }

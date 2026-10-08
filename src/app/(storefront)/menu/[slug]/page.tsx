@@ -224,13 +224,13 @@ export default async function ProductPage({
                     key={review.id}
                     className="rounded-xl border border-border bg-surface p-6 shadow-sm"
                   >
-                    <p
-                      className="font-medium text-brand"
-                      aria-label={`${review.rating} out of 5`}
-                    >
+                    <p className="font-medium text-brand" aria-hidden="true">
                       {'★'.repeat(review.rating)}
                       {'☆'.repeat(5 - review.rating)}
                     </p>
+                    <span className="sr-only">
+                      {`${review.rating} out of 5`}
+                    </span>
 
                     {review.title && (
                       <p className="mt-2 font-display text-lg font-semibold text-foreground">

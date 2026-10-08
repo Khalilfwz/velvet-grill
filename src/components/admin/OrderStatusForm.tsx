@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useId } from 'react'
+import { useActionState, useState, useId } from 'react'
+import { useFormStatus } from 'react-dom'
 import { updateOrderStatus, type AdminActionState } from '@/lib/admin/actions'
 import {
   orderStatusLabel,
@@ -15,24 +16,46 @@ const cellLabelClasses = 'block text-xs font-medium text-zinc-600'
 
 const initialState: AdminActionState = { error: null }
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return <p role="status" className="text-sm text-brand">Saved.</p>
+}
+
 export default function OrderStatusForm({
   orderId,
+  orderNumber,
   currentStatus,
   allowedTransitions,
 }: {
   orderId: string
+  orderNumber?: string
   currentStatus: OrderStatus
   allowedTransitions: OrderStatus[]
 }) {
   const uid = useId()
   const [state, formAction] = useActionState(updateOrderStatus, initialState)
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmit(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
 
   if (allowedTransitions.length === 0) {
     return <p className="text-xs text-zinc-500">No further actions</p>
   }
 
   return (
-    <form action={formAction} className="space-y-2">
+    <form
+      action={handleSubmit}
+      onChange={() => setDirty(true)}
+      className="space-y-2"
+    >
       <input type="hidden" name="orderId" value={orderId} />
 
       <div>
@@ -71,7 +94,14 @@ export default function OrderStatusForm({
         </p>
       )}
 
-      <SubmitButton label="Update status" pendingLabel="Updating…" size="compact" />
+      <SavedNote saved={state.saved ?? false} dirty={dirty} />
+
+      <SubmitButton
+        label="Update status"
+        pendingLabel="Updating…"
+        size="compact"
+        ariaLabel={orderNumber ? `Update status for ${orderNumber}` : undefined}
+      />
     </form>
   )
 }

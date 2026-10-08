@@ -173,6 +173,7 @@ export default function CheckoutForm({
             id="tableId"
             name="tableId"
             required
+            aria-describedby="tableNote"
             value={tableId}
             onChange={(event) => setTableId(event.target.value)}
             // React writes a controlled select's value only when the prop
@@ -199,7 +200,7 @@ export default function CheckoutForm({
             ))}
           </select>
 
-          <p className="mt-1 text-sm text-zinc-600">
+          <p id="tableNote" className="mt-1 text-sm text-zinc-600">
             Use the table shown on your table card.
           </p>
         </div>

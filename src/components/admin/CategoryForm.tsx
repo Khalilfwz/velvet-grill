@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useId } from 'react'
+import { useActionState, useState, useId } from 'react'
+import { useFormStatus } from 'react-dom'
 import { saveCategory, type AdminActionState } from '@/lib/admin/actions'
 import SubmitButton from './SubmitButton'
 import { adminInputClasses, adminLabelClasses } from './form-styles'
@@ -19,6 +20,20 @@ export type CategoryFormInitial = {
 
 const initialState: AdminActionState = { error: null }
 
+function SavedNote({ saved, dirty }: { saved: boolean; dirty: boolean }) {
+  const { pending } = useFormStatus()
+
+  if (!saved || dirty || pending) {
+    return null
+  }
+
+  return (
+    <p role="status" className="text-sm text-brand">
+      Saved.
+    </p>
+  )
+}
+
 export default function CategoryForm({
   initial,
 }: {
@@ -26,9 +41,19 @@ export default function CategoryForm({
 }) {
   const uid = useId()
   const [state, formAction] = useActionState(saveCategory, initialState)
+  const [dirty, setDirty] = useState(false)
+
+  function handleSubmit(formData: FormData) {
+    setDirty(false)
+    formAction(formData)
+  }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form
+      action={handleSubmit}
+      onChange={() => setDirty(true)}
+      className="space-y-4"
+    >
       {initial && <input type="hidden" name="id" value={initial.id} />}
       {/* Storefront category imagery is derived from product images, so the
           path is no longer editable here. It is still submitted so saving
@@ -102,6 +127,7 @@ export default function CategoryForm({
           type="checkbox"
           name="isActive"
           defaultChecked={initial?.isActive ?? true}
+          className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         />
         Active
       </label>
@@ -111,6 +137,8 @@ export default function CategoryForm({
           {state.error}
         </p>
       )}
+
+      <SavedNote saved={state.saved ?? false} dirty={dirty} />
 
       <SubmitButton
         label={initial ? 'Save category' : 'Create category'}
