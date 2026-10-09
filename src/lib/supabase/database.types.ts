@@ -1284,6 +1284,14 @@ export type Database = {
         }
         Returns: string
       }
+      admin_top_products: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          product_key: string
+          product_name: string
+          units_fulfilled: number
+        }[]
+      }
       confirm_order_payment: {
         Args: { p_order_id: string }
         Returns: Database["public"]["Enums"]["payment_status"]

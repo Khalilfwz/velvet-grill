@@ -66,6 +66,12 @@ const EMPTY_METRICS: AnalyticsMetrics = {
   avg_settled_order_value: null,
 }
 
+type TopProduct = {
+  product_key: string
+  product_name: string
+  units_fulfilled: number
+}
+
 const ORDER_STATUS_ROWS: { label: string; key: keyof AnalyticsMetrics }[] = [
   { label: 'Pending payment', key: 'orders_pending_payment' },
   { label: 'Confirmed', key: 'orders_confirmed' },
@@ -211,6 +217,14 @@ export default async function AdminAnalyticsPage({
     ? { ...EMPTY_METRICS, ...data[0] }
     : EMPTY_METRICS
 
+  // Same resolved range as the operational analytics RPC above.
+  const { data: topProductsData, error: topProductsError } = await supabase
+    .rpc('admin_top_products', {
+      p_from: from,
+      p_to: to,
+    })
+  const topProducts: TopProduct[] = topProductsData ?? []
+
   const rangeChips = ANALYTICS_RANGE_OPTIONS.map((option) => {
     const range = rangeForPreset(option.value, todayIso)
 
@@ -319,6 +333,55 @@ export default async function AdminAnalyticsPage({
           metrics={metrics}
         />
       </div>
+
+      <section className="space-y-4">
+        <h2 className="font-display text-xl font-semibold text-foreground">
+          Top products
+        </h2>
+        {topProductsError ? (
+          <p role="alert" className="text-sm text-red-600">
+            Failed to load top products.
+          </p>
+        ) : topProducts.length === 0 ? (
+          <EmptyState message="No completed product sales in this range." />
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-border bg-surface">
+            <table className="w-full text-left text-sm">
+              <caption className="sr-only">
+                Top 5 products ranked by units fulfilled: the summed order-item
+                quantity of completed orders in the selected range, including
+                completed orders later refunded. Products removed from the
+                catalog keep their historical order snapshot names.
+              </caption>
+              <thead className="border-b border-border text-zinc-600">
+                <tr>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Product
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">
+                    Units fulfilled
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {topProducts.map((product) => (
+                  <tr
+                    key={product.product_key}
+                    className="border-b border-border last:border-b-0"
+                  >
+                    <td className="px-4 py-3 text-zinc-600">
+                      {product.product_name}
+                    </td>
+                    <td className="px-4 py-3 text-right text-foreground tabular-nums">
+                      {Number(product.units_fulfilled)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   )
 }
