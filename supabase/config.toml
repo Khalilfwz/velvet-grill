@@ -235,13 +235,13 @@ enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
+max_frequency = "60s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# GAP-04: signup and email-change confirmation links route through the app's
+# GAP-04: signup, email-change, and recovery links route through the app's
 # /auth/confirm endpoint using the token hash and the trusted Site URL. This
 # lets verifyOtp persist the authenticated session in cookies instead of
 # returning tokens in the URL fragment, which nothing in the app consumed.
@@ -252,6 +252,10 @@ content_path = "./supabase/templates/confirmation.html"
 [auth.email.template.email_change]
 subject = "Confirm your new email"
 content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password"
+content_path = "./supabase/templates/recovery.html"
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]

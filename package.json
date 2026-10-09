@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test:unit": "node --test src/lib/auth/recovery-session.test.ts",
     "test:db": "supabase test db"
   },
   "dependencies": {

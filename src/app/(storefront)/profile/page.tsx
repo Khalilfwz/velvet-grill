@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import ProfileForm from '@/components/profile/ProfileForm'
 import AvatarForm from '@/components/profile/AvatarForm'
 import EmailChangeForm from '@/components/profile/EmailChangeForm'
+import PasswordChangeForm from '@/components/profile/PasswordChangeForm'
 import PageHeader from '@/components/layout/PageHeader'
 import ErrorState from '@/components/layout/ErrorState'
 import { getAvatarUrl } from '@/lib/profile/avatar'
@@ -18,7 +19,7 @@ export const metadata = {
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; email?: string }>
+  searchParams: Promise<{ error?: string; email?: string; password?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -102,6 +103,16 @@ export default async function ProfilePage({
           </p>
         )}
 
+        {params.password === 'updated' && (
+          <p
+            role="status"
+            className="mt-6 rounded-lg border border-border bg-surface p-3 text-sm font-medium text-brand"
+          >
+            Your password was updated. Your new password is now active for
+            future sign-ins.
+          </p>
+        )}
+
         <div className="mt-8 space-y-6">
           <section className="rounded-xl border border-border bg-surface p-6 shadow-sm">
             <h2 className="font-display text-xl font-semibold text-foreground">
@@ -131,6 +142,15 @@ export default async function ProfilePage({
             </h2>
             <div className="mt-4">
               <EmailChangeForm currentEmail={email} />
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-border bg-surface p-6 shadow-sm">
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Password
+            </h2>
+            <div className="mt-4">
+              <PasswordChangeForm />
             </div>
           </section>
 

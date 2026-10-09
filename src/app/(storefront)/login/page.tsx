@@ -39,6 +39,16 @@ export default async function LoginPage({
           </p>
         )}
 
+        {params.error === 'recovery' && (
+          <p
+            role="alert"
+            className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          >
+            That password reset link is invalid or has expired. Request a new
+            one below.
+          </p>
+        )}
+
         <div className="mt-8 rounded-xl border border-border bg-surface p-6 shadow-sm">
           <AuthForm mode="login" />
         </div>

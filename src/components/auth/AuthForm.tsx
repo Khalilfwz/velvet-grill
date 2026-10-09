@@ -87,6 +87,17 @@ export default function AuthForm({ mode }: AuthFormProps) {
             : 'Sign in'}
       </button>
 
+      {!isRegister && (
+        <p className="text-sm text-zinc-600">
+          <Link
+            href="/forgot-password"
+            className={`font-medium text-brand transition-colors hover:text-brand-light ${focusClasses}`}
+          >
+            Forgot your password?
+          </Link>
+        </p>
+      )}
+
       <p className="text-sm text-zinc-600">
         {isRegister ? (
           <>

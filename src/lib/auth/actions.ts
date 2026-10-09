@@ -14,6 +14,11 @@ export type AuthActionState = {
 // replace the provider's wording, which must never reach the browser: provider
 // messages can reveal whether an account exists or quote an environment policy.
 const GENERIC_LOGIN_ERROR = 'Incorrect email or password.'
+// Uniform and account-independent: 429s are provider limiter responses keyed
+// on IP/project, so the same throttling message is shown regardless of what
+// was submitted.
+const RATE_LIMITED_ERROR =
+  'Too many attempts. Please try again in a few minutes.'
 const INVALID_EMAIL_ERROR = 'Enter a valid email address.'
 const SHORT_PASSWORD_ERROR = `Password must be at least ${PASSWORD_MIN_LENGTH} characters.`
 const REGISTRATION_ERROR =
@@ -49,6 +54,9 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
+    if (error.code === 'over_request_rate_limit' || error.status === 429) {
+      return { error: RATE_LIMITED_ERROR, notice: null }
+    }
     return { error: GENERIC_LOGIN_ERROR, notice: null }
   }
 
