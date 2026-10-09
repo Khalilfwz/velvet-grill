@@ -163,9 +163,58 @@ function BreakdownTable({
               )
             })}
           </tbody>
+          <tfoot className="border-t border-border bg-zinc-50/60">
+            <tr>
+              <td className="px-4 py-3 font-medium text-zinc-600">Total</td>
+              <td className="px-4 py-3 text-right font-medium text-foreground tabular-nums">
+                {total}
+              </td>
+              <td className="px-4 py-3 text-right font-medium text-zinc-600 tabular-nums">
+                {total > 0 ? '100%' : '—'}
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </section>
+  )
+}
+
+function MetricCard({
+  label,
+  value,
+  detail,
+  featured = false,
+}: {
+  label: string
+  value: string
+  detail?: string
+  featured?: boolean
+}) {
+  return (
+    <div
+      className={`flex flex-col gap-2 rounded-xl border p-5 ${
+        featured ? 'border-brand/40 bg-brand/5' : 'border-border bg-surface'
+      }`}
+    >
+      <p
+        className={`text-sm font-medium ${
+          featured ? 'text-brand' : 'text-zinc-600'
+        }`}
+      >
+        {label}
+      </p>
+      <p
+        className={`break-words font-display font-bold tabular-nums text-foreground ${
+          featured ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl'
+        }`}
+      >
+        {value}
+      </p>
+      {detail ? (
+        <p className="text-xs leading-relaxed text-zinc-500">{detail}</p>
+      ) : null}
+    </div>
   )
 }
 
@@ -241,10 +290,6 @@ export default async function AdminAnalyticsPage({
     }
   )
   const dailyTrend: DailyTrendPoint[] = dailyData ?? []
-  const hasOrders = dailyTrend.some((row) => Number(row.orders_created) > 0)
-  const emptyTrendNote = hasOrders
-    ? undefined
-    : 'No orders in this range; every day shows zero.'
 
   const rangeChips = ANALYTICS_RANGE_OPTIONS.map((option) => {
     const range = rangeForPreset(option.value, todayIso)
@@ -269,67 +314,80 @@ export default async function AdminAnalyticsPage({
           activeValue={`${from}..${to}`}
           items={rangeChips}
         />
-        <p className="text-sm text-zinc-600">
-          Range: {from} to {to} ({timeZone})
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-600">
+          <span>
+            Showing{' '}
+            <span className="font-medium text-foreground">{from}</span> to{' '}
+            <span className="font-medium text-foreground">{to}</span>
+          </span>
+          <span className="rounded-full border border-border px-2 py-0.5 text-xs">
+            {timeZone}
+          </span>
         </p>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm text-zinc-600">Total orders</p>
-          <p className="mt-1 font-display text-3xl font-bold text-foreground">
-            {metrics.total_orders}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm text-zinc-600">
-            Booked order value (excl. cancelled)
-          </p>
-          <p className="mt-1 font-display text-3xl font-bold text-foreground">
-            {formatIDR(Number(metrics.gross_order_value))}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm text-zinc-600">Gross settled value</p>
-          <p className="mt-1 font-display text-3xl font-bold text-foreground">
-            {formatIDR(Number(metrics.gross_settled_value))}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm text-zinc-600">Net collected value</p>
-          <p className="mt-1 font-display text-3xl font-bold text-foreground">
-            {formatIDR(Number(metrics.net_collected_value))}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm text-zinc-600">Refunded value</p>
-          <p className="mt-1 font-display text-3xl font-bold text-foreground">
-            {formatIDR(Number(metrics.refunded_value))}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-sm text-zinc-600">
-            Average settled order value
-          </p>
-          <p className="mt-1 font-display text-3xl font-bold text-foreground">
-            {metrics.avg_settled_order_value === null
+      <section
+        aria-label="Summary metrics"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <MetricCard
+          featured
+          label="Net collected value"
+          value={formatIDR(Number(metrics.net_collected_value))}
+          detail="Orders whose current payment status is PAID."
+        />
+        <MetricCard
+          label="Total orders"
+          value={String(metrics.total_orders)}
+          detail="All orders created in the selected range."
+        />
+        <MetricCard
+          label="Booked order value"
+          value={formatIDR(Number(metrics.gross_order_value))}
+          detail="Excludes cancelled orders."
+        />
+        <MetricCard
+          label="Gross settled value"
+          value={formatIDR(Number(metrics.gross_settled_value))}
+          detail="Payment status PAID or REFUNDED."
+        />
+        <MetricCard
+          label="Refunded value"
+          value={formatIDR(Number(metrics.refunded_value))}
+          detail="Payment status REFUNDED."
+        />
+        <MetricCard
+          label="Average settled order value"
+          value={
+            metrics.avg_settled_order_value === null
               ? '—'
-              : formatIDR(Number(metrics.avg_settled_order_value))}
-          </p>
-        </div>
+              : formatIDR(Number(metrics.avg_settled_order_value))
+          }
+          detail="Gross settled value ÷ settled orders."
+        />
       </section>
 
-      <p className="text-sm text-zinc-600">
-        Settled metrics are attributed to the order creation date ({timeZone}).
-      </p>
+      <div className="space-y-1.5 text-sm leading-relaxed text-zinc-600">
+        <p>
+          <span className="font-medium text-foreground">
+            Average settled order value
+          </span>{' '}
+          is gross settled value divided by settled orders (orders with payment
+          status PAID or REFUNDED), and is shown as — when there are no settled
+          orders.
+        </p>
+        <p>
+          Financial metrics are attributed to each order&apos;s creation date in
+          the restaurant timezone ({timeZone}), not the payment-event date.
+        </p>
+        <p>
+          Payments in this project are simulated for demonstration; these
+          figures are not real revenue.
+        </p>
+      </div>
 
       {metrics.total_orders === 0 && (
-        <EmptyState message="No orders in this range." />
+        <EmptyState message="No orders were created in this range." />
       )}
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -363,32 +421,36 @@ export default async function AdminAnalyticsPage({
         <div className="space-y-8">
           <DailyTrendChart
             title="Daily orders created"
-            caption="Bar chart of orders created each day in the selected range, in the restaurant timezone. Each bar shows the exact order count above it and the day (month-day) below it. CANCELLED orders are included."
+            caption="Bar chart of orders created each day in the selected range, in the restaurant timezone. Short ranges label each bar with its exact order count; every day's exact count is also announced to assistive technology. CANCELLED orders are included."
             points={dailyTrend.map((row) => ({
               day: row.day,
               value: Number(row.orders_created),
             }))}
             formatValue={(value) => String(value)}
-            emptyNote={emptyTrendNote}
+            unitLabel="orders"
           />
 
           <DailyTrendChart
             title="Daily net collected"
-            caption="Bar chart of net collected value each day in the selected range, in the restaurant timezone. Each bar shows the exact IDR amount above it and the day (month-day) below it. Only orders whose current payment status is PAID contribute; refunded, unpaid, pending, failed, and expired orders contribute zero."
+            caption="Bar chart of net collected value each day in the selected range, in the restaurant timezone. Short ranges label each bar with its exact IDR amount; every day's exact amount is also announced to assistive technology. Only orders whose current payment status is PAID contribute; refunded, unpaid, pending, failed, and expired orders contribute zero."
             points={dailyTrend.map((row) => ({
               day: row.day,
               value: Number(row.net_collected_value),
             }))}
             formatValue={formatIDR}
-            emptyNote={emptyTrendNote}
           />
         </div>
       )}
 
       <section className="space-y-4">
-        <h2 className="font-display text-xl font-semibold text-foreground">
-          Top products
-        </h2>
+        <div>
+          <h2 className="font-display text-xl font-semibold text-foreground">
+            Top products
+          </h2>
+          <p className="mt-1 text-sm text-zinc-600">
+            Top 5 by units fulfilled in completed orders.
+          </p>
+        </div>
         {topProductsError ? (
           <p role="alert" className="text-sm text-red-600">
             Failed to load top products.
@@ -407,6 +469,9 @@ export default async function AdminAnalyticsPage({
               <thead className="border-b border-border text-zinc-600">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">
+                    Rank
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
                     Product
                   </th>
                   <th scope="col" className="px-4 py-3 text-right font-medium">
@@ -415,15 +480,18 @@ export default async function AdminAnalyticsPage({
                 </tr>
               </thead>
               <tbody>
-                {topProducts.map((product) => (
+                {topProducts.map((product, index) => (
                   <tr
                     key={product.product_key}
                     className="border-b border-border last:border-b-0"
                   >
-                    <td className="px-4 py-3 text-zinc-600">
+                    <td className="px-4 py-3 tabular-nums text-zinc-500">
+                      {index + 1}
+                    </td>
+                    <td className="px-4 py-3 text-foreground">
                       {product.product_name}
                     </td>
-                    <td className="px-4 py-3 text-right text-foreground tabular-nums">
+                    <td className="px-4 py-3 text-right font-medium text-foreground tabular-nums">
                       {Number(product.units_fulfilled)}
                     </td>
                   </tr>
