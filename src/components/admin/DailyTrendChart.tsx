@@ -40,6 +40,51 @@ function SingleDaySummary({ points, formatValue, unitLabel }: ChartProps) {
   )
 }
 
+function DailyValuesTable({ points, formatValue, unitLabel, title }: ChartProps & { title: string }) {
+  const valueHeader = unitLabel ? `Value (${unitLabel})` : 'Value'
+
+  return (
+    <details className="rounded-xl border border-border bg-surface">
+      <summary className="cursor-pointer rounded-xl px-4 py-3 text-sm font-medium text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+        View exact daily values
+      </summary>
+      <div className="overflow-x-auto border-t border-border">
+        <table className="w-full text-left text-sm">
+          <caption className="sr-only">
+            {title} for every day in the selected range, including days with no
+            activity.
+          </caption>
+          <thead className="border-b border-border text-zinc-600">
+            <tr>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Date
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                {valueHeader}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {points.map((point) => (
+              <tr
+                key={point.day}
+                className="border-b border-border last:border-b-0"
+              >
+                <td className="whitespace-nowrap px-4 py-3 text-zinc-600">
+                  {formatFullDate(point.day)}
+                </td>
+                <td className="px-4 py-3 text-right text-foreground tabular-nums">
+                  {formatValue(point.value)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  )
+}
+
 function DailyBars({ points, formatValue, unitLabel, title }: ChartProps & { title: string }) {
   const dayCount = points.length
   // Scale against the series maximum; the floor of 1 keeps an all-zero
@@ -120,6 +165,7 @@ export default function DailyTrendChart({
   caption: string
 } & ChartProps) {
   const dayCount = points.length
+  const showExactValuesTable = dayCount > 7
 
   return (
     <section className="space-y-4">
@@ -127,7 +173,17 @@ export default function DailyTrendChart({
         {title}
       </h2>
       <figure className="space-y-3">
-        <figcaption className="sr-only">{caption}</figcaption>
+        <figcaption className="sr-only">
+          {dayCount === 1
+            ? `Single-day summary. ${caption}`
+            : dayCount > 1
+              ? `Daily bar chart. ${caption}${
+                  showExactValuesTable
+                    ? ' An expandable table of exact daily values follows the chart.'
+                    : ''
+                }`
+              : caption}
+        </figcaption>
         {dayCount === 0 ? (
           <p className="rounded-xl border border-border bg-surface p-6 text-sm text-zinc-600">
             No daily data is available for this range.
@@ -146,6 +202,14 @@ export default function DailyTrendChart({
             unitLabel={unitLabel}
           />
         )}
+        {showExactValuesTable ? (
+          <DailyValuesTable
+            title={title}
+            points={points}
+            formatValue={formatValue}
+            unitLabel={unitLabel}
+          />
+        ) : null}
       </figure>
     </section>
   )

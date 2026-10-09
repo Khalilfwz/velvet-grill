@@ -421,7 +421,7 @@ export default async function AdminAnalyticsPage({
         <div className="space-y-8">
           <DailyTrendChart
             title="Daily orders created"
-            caption="Bar chart of orders created each day in the selected range, in the restaurant timezone. Short ranges label each bar with its exact order count; every day's exact count is also announced to assistive technology. CANCELLED orders are included."
+            caption="Orders created each day in the selected range, in the restaurant timezone. Short ranges label each bar with its exact order count; every day's exact count is also announced to assistive technology. CANCELLED orders are included."
             points={dailyTrend.map((row) => ({
               day: row.day,
               value: Number(row.orders_created),
@@ -432,7 +432,7 @@ export default async function AdminAnalyticsPage({
 
           <DailyTrendChart
             title="Daily net collected"
-            caption="Bar chart of net collected value each day in the selected range, in the restaurant timezone. Short ranges label each bar with its exact IDR amount; every day's exact amount is also announced to assistive technology. Only orders whose current payment status is PAID contribute; refunded, unpaid, pending, failed, and expired orders contribute zero."
+            caption="Net collected value each day in the selected range, in the restaurant timezone. Short ranges label each bar with its exact IDR amount; every day's exact amount is also announced to assistive technology. Only orders whose current payment status is PAID contribute; refunded, unpaid, pending, failed, and expired orders contribute zero."
             points={dailyTrend.map((row) => ({
               day: row.day,
               value: Number(row.net_collected_value),
