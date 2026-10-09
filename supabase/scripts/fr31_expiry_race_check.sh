@@ -17,22 +17,43 @@
 #   with 42501 once B commits.
 #
 # This is NOT a pgTAP test and lives outside supabase/tests, so it is
-# never collected by `supabase test db`. Run it manually against the
-# local DB:
+# never collected by `supabase test db`. It runs ONLY against an
+# isolated database whose target is configured explicitly at
+# invocation — there is no default target and no docker fallback:
 #
-#   bash supabase/scripts/fr31_expiry_race_check.sh
+#   SUPABASE_DB_URL=<isolated db url> \
+#   FR31_EXPECTED_SYSTEM_ID=<system_identifier of the target> \
+#     bash supabase/scripts/fr31_expiry_race_check.sh
+#
+# Before any mutation the script connects read-only, reads the target
+# system_identifier via pg_control_system() and aborts unless it
+# matches FR31_EXPECTED_SYSTEM_ID exactly. Never point this script at
+# the development database. Apply the project migrations to the target
+# database first (WITHOUT a reset).
 #
 # It uses dedicated, fixed FR-31 fixtures only and never resets the
 # database. Its expiry runs may expire OTHER stale pending digital
-# payments found on the local dev data (that is the implemented
+# payments found on the target data (that is the implemented
 # behavior); all assertions are scoped to the FR-31 fixture rows.
-#
-# Apply migrations first (preserving local data), WITHOUT a reset:
-#   npx supabase migration up --local
 
 set -euo pipefail
 
-SUPABASE_DB_URL="${SUPABASE_DB_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}"
+# ------------------------------------------------------------------
+# Fail-closed configuration: no defaults, no fallbacks, no implicit
+# targets. Abort before touching anything if these are missing.
+# ------------------------------------------------------------------
+if [ -z "${SUPABASE_DB_URL:-}" ]; then
+  echo "FAIL: SUPABASE_DB_URL must be set explicitly (no default database target)"
+  exit 1
+fi
+if [ -z "${FR31_EXPECTED_SYSTEM_ID:-}" ]; then
+  echo "FAIL: FR31_EXPECTED_SYSTEM_ID must be set explicitly (expected system_identifier of the target)"
+  exit 1
+fi
+if ! command -v psql >/dev/null 2>&1; then
+  echo "FAIL: a working host psql is required (no docker fallback)"
+  exit 1
+fi
 
 # Dedicated FR-31 race fixtures (fixed ids).
 USER_A='a0313131-0000-4000-8000-0000000000a1'
@@ -46,44 +67,18 @@ PAY_2='bf031331-0000-4000-8000-000000000002'
 ITEM_1='a0313131-0000-4000-8000-000000000001'
 ITEM_2='a0313131-0000-4000-8000-000000000002'
 
-TMP_DIR="$(mktemp -d)"
-A_OUT="$TMP_DIR/session_a.out"
-B_OUT="$TMP_DIR/session_b.out"
-A2_OUT="$TMP_DIR/session_a2.out"
-A_PID=""
-B_PID=""
-A2_PID=""
-
 # ------------------------------------------------------------------
-# psql transport: prefer host psql; otherwise use the already-running
-# local DB container. Every build_psql_cmd + invocation is a separate
-# process (and therefore a separate database backend): no session is
-# shared between the setup, polling, session A, session B,
-# verification and cleanup connections.
+# psql transport: host psql only. Every build_psql_cmd + invocation is
+# a separate process (and therefore a separate database backend): no
+# session is shared between the guard, setup, polling, session A,
+# session B, verification and cleanup connections.
 # ------------------------------------------------------------------
-DB_CONTAINER="${FR31_DB_CONTAINER:-supabase_db_velvet-grill}"
-
-if command -v psql >/dev/null 2>&1 && \
-   [ "$(env PGAPPNAME=fr31_probe psql "$SUPABASE_DB_URL" -A -t -c 'select 1' 2>/dev/null)" = "1" ]; then
-  PSQL_MODE="host"
-elif [ "$(docker exec -i "$DB_CONTAINER" psql -A -t -X -U postgres -d postgres -c 'select 1' 2>/dev/null)" = "1" ]; then
-  PSQL_MODE="docker"
-else
-  echo "FAIL: no working psql transport (host psql broken; docker exec failed)"
-  exit 1
-fi
-
 PSQL_CMD=()
 
 build_psql_cmd() {
   local app_name="$1"
-  if [ "$PSQL_MODE" = "host" ]; then
-    PSQL_CMD=(env "PGAPPNAME=$app_name" psql "$SUPABASE_DB_URL" \
-      -v ON_ERROR_STOP=1 -X)
-  else
-    PSQL_CMD=(docker exec -i -e "PGAPPNAME=$app_name" "$DB_CONTAINER" \
-      psql -v ON_ERROR_STOP=1 -X -U postgres -d postgres)
-  fi
+  PSQL_CMD=(env "PGAPPNAME=$app_name" psql "$SUPABASE_DB_URL" \
+    -v ON_ERROR_STOP=1 -X)
 }
 
 psql_run() {
@@ -93,8 +88,38 @@ psql_run() {
   "${PSQL_CMD[@]}" "$@"
 }
 
+# Never display the connection string; libpq supports multiple
+# formats that may contain credentials.
+echo "== FR-31 confirm-vs-expiry race check =="
+echo "   db: explicitly configured target (URL withheld)"
+
+# ------------------------------------------------------------------
+# Target guard: prove this is the expected isolated database BEFORE
+# any fixture mutation and BEFORE registering the cleanup trap.
+# Read-only; aborts on connection failure or identifier mismatch.
+# ------------------------------------------------------------------
+if ! TARGET_SYSTEM_ID="$(psql_run fr31_guard -A -t -c \
+  'select system_identifier::text from pg_control_system()' 2>/dev/null)"; then
+  echo "FAIL: could not read the target system_identifier (connection or query failed)"
+  exit 1
+fi
+if [ "$TARGET_SYSTEM_ID" != "$FR31_EXPECTED_SYSTEM_ID" ]; then
+  echo "FAIL: target system_identifier '$TARGET_SYSTEM_ID' does not match FR31_EXPECTED_SYSTEM_ID; refusing to run"
+  exit 1
+fi
+echo "   target verified: system_identifier matches FR31_EXPECTED_SYSTEM_ID"
+
+TMP_DIR="$(mktemp -d)"
+A_OUT="$TMP_DIR/session_a.out"
+B_OUT="$TMP_DIR/session_b.out"
+A2_OUT="$TMP_DIR/session_a2.out"
+A_PID=""
+B_PID=""
+A2_PID=""
+
 cleanup() {
   local rc=$?
+  local failed=0
   set +e
 
   if [ -n "$A_PID" ]; then kill "$A_PID" 2>/dev/null; fi
@@ -102,11 +127,17 @@ cleanup() {
   if [ -n "$A2_PID" ]; then kill "$A2_PID" 2>/dev/null; fi
   wait 2>/dev/null
 
-  psql_run fr31_cleanup -c "select pg_terminate_backend(pid) from pg_stat_activity \
-    where application_name like 'fr31_%'" >/dev/null 2>&1 || true
+  # Terminate ONLY the dedicated race backends — never this cleanup
+  # connection (pg_backend_pid()) and never unrelated sessions.
+  if ! psql_run fr31_cleanup -A -t -c "select pg_terminate_backend(pid) from pg_stat_activity \
+      where application_name in ('fr31_sess_a', 'fr31_sess_b', 'fr31_sess_a2') \
+        and pid <> pg_backend_pid()" >/dev/null; then
+    echo "FAIL: cleanup could not terminate the race session backends"
+    failed=1
+  fi
 
   # Delete ONLY the dedicated FR-31 race fixtures, in FK-safe order.
-  psql_run fr31_cleanup <<SQL >/dev/null 2>&1 || true
+  if ! psql_run fr31_cleanup >/dev/null <<SQL
 begin;
 delete from public.order_status_history h
   using public.orders o
@@ -125,23 +156,51 @@ delete from public.categories where id = '$CATEGORY';
 delete from auth.users where id = '$USER_A';
 commit;
 SQL
+  then
+    echo "FAIL: cleanup SQL failed; FR-31 fixtures may remain"
+    failed=1
+  fi
 
-  rm -rf "$TMP_DIR" 2>/dev/null || true
+  # Read-only, scoped proof that the dedicated fixture rows are gone.
+  local leftover
+  leftover="$(psql_run fr31_verify -A -t -c "select
+    (select count(*) from public.orders where id in ('$ORDER_1', '$ORDER_2')) +
+    (select count(*) from public.payments where order_id in ('$ORDER_1', '$ORDER_2')) +
+    (select count(*) from public.order_items where order_id in ('$ORDER_1', '$ORDER_2')) +
+    (select count(*) from public.order_status_history where order_id in ('$ORDER_1', '$ORDER_2')) +
+    (select count(*) from public.notifications where order_id in ('$ORDER_1', '$ORDER_2')) +
+    (select count(*) from public.products where id in ('$PROD_A', '$PROD_B')) +
+    (select count(*) from public.categories where id = '$CATEGORY') +
+    (select count(*) from auth.users where id = '$USER_A')" 2>/dev/null)"
+  if [ "$leftover" != "0" ]; then
+    echo "FAIL: FR-31 fixture rows still present after cleanup (leftover=$leftover)"
+    failed=1
+  fi
+
+  if [ -n "$TMP_DIR" ]; then
+    rm -rf "$TMP_DIR" 2>/dev/null || true
+  fi
 
   trap - EXIT INT TERM
-  exit "$rc"
+  if [ "$rc" -ne 0 ]; then
+    exit "$rc"
+  fi
+  if [ "$failed" -ne 0 ]; then
+    exit 1
+  fi
+  echo "   cleanup verified: FR-31 fixtures removed"
+  exit 0
 }
-trap cleanup EXIT INT TERM
-
-echo "== FR-31 confirm-vs-expiry race check =="
-echo "   db: $SUPABASE_DB_URL"
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # ------------------------------------------------------------------
 # The migration must already be applied (function + cron exist).
 # ------------------------------------------------------------------
 if ! psql_run fr31_gate -A -t -c "select to_regprocedure('private.expire_stale_digital_payments()') is not null" | grep -qx 't'; then
   echo "FAIL: private.expire_stale_digital_payments() is missing"
-  echo "      run: npx supabase migration up --local"
+  echo "      apply the project migrations to the target database first"
   exit 1
 fi
 
