@@ -1,5 +1,6 @@
 import { requireAdminPage } from '@/lib/admin/guard'
 import AdminPageHeading from '@/components/admin/AdminPageHeading'
+import DailyTrendChart from '@/components/admin/DailyTrendChart'
 import EmptyState from '@/components/admin/EmptyState'
 import FilterChips from '@/components/admin/FilterChips'
 import { formatIDR } from '@/lib/format-currency'
@@ -70,6 +71,12 @@ type TopProduct = {
   product_key: string
   product_name: string
   units_fulfilled: number
+}
+
+type DailyTrendPoint = {
+  day: string
+  orders_created: number
+  net_collected_value: number
 }
 
 const ORDER_STATUS_ROWS: { label: string; key: keyof AnalyticsMetrics }[] = [
@@ -225,6 +232,20 @@ export default async function AdminAnalyticsPage({
     })
   const topProducts: TopProduct[] = topProductsData ?? []
 
+  // Same resolved range as the operational analytics RPC above.
+  const { data: dailyData, error: dailyError } = await supabase.rpc(
+    'admin_daily_analytics',
+    {
+      p_from: from,
+      p_to: to,
+    }
+  )
+  const dailyTrend: DailyTrendPoint[] = dailyData ?? []
+  const hasOrders = dailyTrend.some((row) => Number(row.orders_created) > 0)
+  const emptyTrendNote = hasOrders
+    ? undefined
+    : 'No orders in this range; every day shows zero.'
+
   const rangeChips = ANALYTICS_RANGE_OPTIONS.map((option) => {
     const range = rangeForPreset(option.value, todayIso)
 
@@ -333,6 +354,36 @@ export default async function AdminAnalyticsPage({
           metrics={metrics}
         />
       </div>
+
+      {dailyError ? (
+        <p role="alert" className="text-sm text-red-600">
+          Failed to load daily trend analytics.
+        </p>
+      ) : (
+        <div className="space-y-8">
+          <DailyTrendChart
+            title="Daily orders created"
+            caption="Bar chart of orders created each day in the selected range, in the restaurant timezone. Each bar shows the exact order count above it and the day (month-day) below it. CANCELLED orders are included."
+            points={dailyTrend.map((row) => ({
+              day: row.day,
+              value: Number(row.orders_created),
+            }))}
+            formatValue={(value) => String(value)}
+            emptyNote={emptyTrendNote}
+          />
+
+          <DailyTrendChart
+            title="Daily net collected"
+            caption="Bar chart of net collected value each day in the selected range, in the restaurant timezone. Each bar shows the exact IDR amount above it and the day (month-day) below it. Only orders whose current payment status is PAID contribute; refunded, unpaid, pending, failed, and expired orders contribute zero."
+            points={dailyTrend.map((row) => ({
+              day: row.day,
+              value: Number(row.net_collected_value),
+            }))}
+            formatValue={formatIDR}
+            emptyNote={emptyTrendNote}
+          />
+        </div>
+      )}
 
       <section className="space-y-4">
         <h2 className="font-display text-xl font-semibold text-foreground">

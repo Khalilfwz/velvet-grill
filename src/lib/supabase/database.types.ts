@@ -1145,6 +1145,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_daily_analytics: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          day: string
+          net_collected_value: number
+          orders_created: number
+        }[]
+      }
       admin_delete_product_image: {
         Args: { p_id: string; p_product_id: string }
         Returns: undefined
