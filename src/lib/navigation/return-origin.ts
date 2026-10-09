@@ -26,6 +26,32 @@ export function clearReturnOrigin(): void {
   lastOrigin = null
 }
 
+// Scroll offset captured at the moment a list-side link is followed, used only
+// by the menu's restoration component to re-apply the browsing position on a
+// same-tab return. One slot, replaced by every plain-click navigation, and
+// consumed exactly once — never persisted, never read on a fresh load.
+export type ScrollOriginSlot = {
+  readonly origin: ReturnTargetKey
+  readonly y: number
+}
+
+let scrollSlot: ScrollOriginSlot | null = null
+
+export function rememberScrollOrigin(origin: ReturnTargetKey): void {
+  scrollSlot = { origin, y: window.scrollY }
+}
+
+export function peekScrollOrigin(): ScrollOriginSlot | null {
+  return scrollSlot
+}
+
+/** Clears the slot only if it is still the captured one, so a newer click's slot survives. */
+export function clearScrollOrigin(slot: ScrollOriginSlot): void {
+  if (scrollSlot === slot) {
+    scrollSlot = null
+  }
+}
+
 type ClickLike = {
   defaultPrevented: boolean
   button: number

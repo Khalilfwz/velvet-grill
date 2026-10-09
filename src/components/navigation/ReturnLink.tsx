@@ -7,6 +7,7 @@ import type { ReturnTargetKey } from '@/lib/navigation/return-targets'
 import {
   isPlainLeftClick,
   rememberReturnOrigin,
+  rememberScrollOrigin,
 } from '@/lib/navigation/return-origin'
 
 type ReturnLinkProps = {
@@ -35,6 +36,7 @@ export default function ReturnLink({
       onClick={(event) => {
         if (isPlainLeftClick(event)) {
           rememberReturnOrigin(origin)
+          rememberScrollOrigin(origin)
         }
       }}
     >

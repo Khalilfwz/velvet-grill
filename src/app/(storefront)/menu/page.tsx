@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import ProductImage from '@/components/catalog/ProductImage'
 import ReturnLink from '@/components/navigation/ReturnLink'
+import MenuScrollRestoration from '@/components/navigation/MenuScrollRestoration'
 import PageHeader from '@/components/layout/PageHeader'
 import ErrorState from '@/components/layout/ErrorState'
 import {
@@ -84,6 +85,8 @@ export default async function MenuPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-7xl">
+        <MenuScrollRestoration />
+
         <PageHeader
           title="Our Menu"
           description="Explore our selection of steak, burgers, drinks, and desserts."
