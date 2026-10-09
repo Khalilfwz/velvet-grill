@@ -1258,6 +1258,14 @@ export type Database = {
         }
         Returns: string
       }
+      add_cart_item: {
+        Args: {
+          p_option_ids?: string[]
+          p_product_id: string
+          p_quantity: number
+        }
+        Returns: string
+      }
       admin_save_restaurant_settings: {
         Args: {
           p_address: string
