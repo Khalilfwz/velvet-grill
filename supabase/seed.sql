@@ -738,9 +738,12 @@ values
 -- README.md. The on_auth_user_created trigger (FR-07) provisions
 -- the matching public.profiles rows; the admin row is promoted
 -- to ADMIN below. auth.identities rows mirror what GoTrue writes
--- for email/password signups. GoTrue reads the auth.users token
--- string columns (confirmation_token, recovery_token, email_change,
--- email_change_token_new) as non-nullable strings during sign-in:
+-- for email/password signups: provider_id is the user UUID, which is
+-- how GoTrue looks email identities up (e.g. during email-change
+-- confirmation), not the email address. GoTrue reads the auth.users
+-- token string columns (confirmation_token, recovery_token,
+-- email_change, email_change_token_new) as non-nullable strings
+-- during sign-in:
 -- NULL breaks password grants with HTTP 500 "converting NULL to
 -- string is unsupported" and those columns have no defaults, so the
 -- seed writes '' (what GoTrue itself stores on signup), never NULL.
@@ -812,7 +815,7 @@ insert into auth.identities (
   updated_at
 )
 select
-  u.email,
+  u.id::text,
   u.id,
   jsonb_build_object(
     'sub', u.id::text,

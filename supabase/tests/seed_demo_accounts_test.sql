@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(12);
+select plan(16);
 
 -- ============================================================
 -- Seed regression: demo accounts (supabase/seed.sql, local/demo-only)
@@ -15,9 +15,11 @@ select plan(12);
 -- "converting NULL to string is unsupported". The seed must write
 -- '' explicitly, mirroring what GoTrue itself stores on API signup.
 --
--- Assertions cover exactly the four confirmed columns (T4/T5) plus
--- the pre-existing demo-account invariants: roles, confirmation,
--- bcrypt passwords, identities, and trigger-provisioned profiles.
+-- Assertions cover exactly the four confirmed columns (T4/T5), the
+-- GoTrue email-identity contract (T13-T16: provider_id and
+-- identity_data.sub keyed to the user UUID), plus the pre-existing
+-- demo-account invariants: roles, confirmation, bcrypt passwords,
+-- identities, and trigger-provisioned profiles.
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -183,6 +185,86 @@ select is(
   ),
   'ADMIN/Demo Admin',
   'Demo admin profile is promoted to ADMIN'
+);
+
+-- ------------------------------------------------------------
+-- EMAIL IDENTITY CONTRACT (T13-T16)
+--
+-- GoTrue keys email identities by the user UUID: it looks an email
+-- identity up with provider = 'email' and provider_id = user ID
+-- (e.g. during email-change confirmation). Seeding provider_id as
+-- the email address breaks that lookup even though sign-in still
+-- works, so the identity contract is pinned below, scoped to the two
+-- fixed demo UUIDs only.
+-- ------------------------------------------------------------
+
+-- T13
+select is(
+  (
+    select count(*)
+    from (
+      select user_id
+      from auth.identities
+      where user_id in (
+        'a0000000-0000-4000-8000-000000000001',
+        'a0000000-0000-4000-8000-000000000002'
+      )
+        and provider = 'email'
+      group by user_id
+      having count(*) = 1
+    ) users_with_exactly_one_email_identity
+  ),
+  2::bigint,
+  'Each fixed demo user UUID has exactly one email identity'
+);
+
+-- T14 (provider_id regression)
+select is(
+  (
+    select count(*)
+    from auth.identities
+    where user_id in (
+      'a0000000-0000-4000-8000-000000000001',
+      'a0000000-0000-4000-8000-000000000002'
+    )
+      and provider = 'email'
+      and provider_id = user_id::text
+  ),
+  2::bigint,
+  'Demo email identities key provider_id to the user UUID (GoTrue identity lookup)'
+);
+
+-- T15
+select is(
+  (
+    select count(*)
+    from auth.identities
+    where user_id in (
+      'a0000000-0000-4000-8000-000000000001',
+      'a0000000-0000-4000-8000-000000000002'
+    )
+      and provider = 'email'
+      and identity_data ->> 'sub' = user_id::text
+  ),
+  2::bigint,
+  'Demo email identities set identity_data sub to the user UUID'
+);
+
+-- T16
+select is(
+  (
+    select count(*)
+    from auth.identities i
+    join auth.users u on u.id = i.user_id
+    where i.user_id in (
+      'a0000000-0000-4000-8000-000000000001',
+      'a0000000-0000-4000-8000-000000000002'
+    )
+      and i.provider = 'email'
+      and i.identity_data ->> 'email' = u.email::text
+  ),
+  2::bigint,
+  'Demo email identities mirror the account email'
 );
 
 select * from finish();
