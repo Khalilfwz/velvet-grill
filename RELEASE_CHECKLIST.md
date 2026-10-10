@@ -1,9 +1,10 @@
 # Velvet Grill — Release Checklist
 
 Final smoke-test and acceptance checklist for a portfolio release. Walk it
-top to bottom on a freshly reset local environment. Expected outcomes come
-from `PRD.md` and `ARCHITECTURE.md` (§9 order lifecycle, §10 payment
-lifecycle).
+top to bottom on a freshly migrated and seeded local environment (see §0 —
+the database reset is a human-gated destructive operation, not a routine
+step). Expected outcomes come from `PRD.md` and `ARCHITECTURE.md`
+(§9 order lifecycle, §10 payment lifecycle).
 
 > **Demo accounts are local/demo-only.** They exist only after running
 > `supabase/seed.sql` (local development).
@@ -16,9 +17,18 @@ lifecycle).
 - [ ] `npm install` completed
 - [ ] `.env.local` created from `.env.example` with values from `npx supabase status`
 - [ ] Local stack running: `npx supabase start`
-- [ ] Database migrated + seeded: `npx supabase db reset --local`
-      ⚠️ Destroys and recreates the local database — requires separate human
-      approval under `SECURITY_WORKFLOW.md` §10.
+- [ ] Database migrated + seeded — human-gated, **not** a routine setup
+      step: `npx supabase db reset --local` destroys and recreates the
+      local database and requires explicit human approval under
+      `SECURITY_WORKFLOW.md` §10. Schema migration and demo seed
+      provisioning are separate requirements: `npx supabase migration up
+      --local` is the non-destructive path for pending migrations on an
+      existing database (operates on the Supabase project tied to the
+      current working directory) — it does not run the demo seed. Seed
+      data must already exist or be provisioned through a separately
+      reviewed, explicitly approved procedure in the intended
+      local/demo environment; never run seed SQL against an existing
+      database automatically.
 
 ## 1. Automated gates
 
@@ -27,10 +37,31 @@ lifecycle).
 | `npm run lint` | no errors |
 | `npm run typecheck` | no errors |
 | `npm run build` | build completes, no type errors |
+| `npm run test:unit` | all unit tests pass (recorded baseline 15/15) |
 | `git diff --check` | no whitespace/conflict-marker issues |
-| `npm run test:db` | all pgTAP suites pass (35 files) |
-| `bash supabase/scripts/stock_oversell_check.sh` | no oversell (FR-21 race proof) |
-| `bash supabase/scripts/fr31_expiry_race_check.sh` | expiry path deterministic (FR-31 race proof) |
+| `npm run test:db` | all pgTAP suites pass (38 test files; recorded baseline 887 passing assertions) |
+
+### Concurrency race proofs — isolated database only
+
+⚠️ Do **not** run either race proof against the primary development
+database. Point both scripts at a dedicated, isolated database with the
+project migrations applied, and run them with host `psql` installed (see
+README → "Concurrency race proofs"). Neither script is collected by
+`supabase test db`.
+
+| Command | Expected |
+| --- | --- |
+| `SUPABASE_DB_URL="$ISOLATED_DB_URL" bash supabase/scripts/stock_oversell_check.sh` | no oversell (FR-21 race proof) |
+| `SUPABASE_DB_URL="$ISOLATED_DB_URL" FR31_EXPECTED_SYSTEM_ID="$ISOLATED_SYSTEM_ID" bash supabase/scripts/fr31_expiry_race_check.sh` | expiry path deterministic (FR-31 race proof) |
+
+Configure and verify `$ISOLATED_DB_URL` and `$ISOLATED_SYSTEM_ID` (the
+target's `system_identifier`) before running. `fr31_expiry_race_check.sh`
+requires the explicit database URL and expected system identifier and
+aborts otherwise (no default target, no Docker fallback).
+`stock_oversell_check.sh` defaults to the development database on port
+54322 when no target is supplied and, if host `psql` is unavailable,
+falls back to a development Docker container where `SUPABASE_DB_URL` is
+ignored — host `psql` is required so it runs in host mode.
 
 ## 2. Storefront smoke path
 
@@ -98,9 +129,52 @@ Sign in as `admin@velvetgrill.test` (local demo password in README):
 - [ ] 9.6 AI-assisted changes reviewable in Git (clean, scoped diff)
 - [ ] 9.7 Deployment does not expose secrets (no real keys in repo; `.env*` ignored; `.env.example` has placeholders only)
 
-## 6. Sign-off
+Recorded baseline evidence for these criteria is summarized in §6; each
+criterion stays pending until verified through the human sign-off in §7.
 
-- Automated gates run by: ______________  date: __________
+## 6. Recorded verification status (SEC-04 baseline)
+
+Recorded after the SEC-04 dependency remediation. These are recorded
+results, not a re-certification — re-run the gates above on a fresh
+environment before release.
+
+| Check | Recorded result |
+| --- | --- |
+| `npm run test:unit` | 15/15 passing |
+| `npm run test:db` (pgTAP) | 38 test files, 887 passing assertions |
+| Manual E2E + security verification (reported) | 41/41 PASS |
+| SEC-04 focused runtime regression | 7/7 PASS |
+| Production dependency audit (`npm audit --omit=dev`) | 0 vulnerabilities |
+| Full dependency audit (`npm audit --include=dev`) | 5 high findings (dev-only `braces` chain — open risk, see below) |
+
+Dependency remediation recorded in this baseline: `next` 16.4.0,
+`eslint-config-next` 16.4.0, `sharp` 0.35.5, `source-map-js` 1.2.2.
+
+Known open risk (re-verified during AUDIT-04B):
+
+- **SEC-04-RISK-01** — the full dependency audit reports five High
+  findings from the development-only `braces` chain (`eslint-config-next`
+  lint tooling; the production audit is clean). The full dependency audit
+  is **not** claimed to pass and no fix is claimed here. npm can be
+  configured to omit dev dependencies (`npm config get omit`), which
+  makes a plain `npm audit` skip the development tree — audit with
+  `npm audit --include=dev`.
+
+These recorded results do not certify the application as
+production-secure.
+
+## 7. Sign-off
+
+Automated and reported manual checks (§1, §6) may be recorded as
+completed for the SEC-04 baseline. Everything not verified there —
+including §5 release criteria and the full dependency audit — remains
+pending until verified by a human.
+
+- Automated gates: recorded for the SEC-04 baseline (§1, §6) — re-run on
+  a fresh environment before release.
 - Storefront path verified by: ______________  date: __________
 - Admin path verified by: ______________  date: __________
 - Notifications verified by: ______________  date: __________
+- Release sign-off (human approval; destructive operations and any
+  deployment remain gated per `SECURITY_WORKFLOW.md`):
+  ______________  date: __________
